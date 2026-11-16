@@ -82,9 +82,12 @@ if [ "$DRY_RUN" -eq 1 ]; then
   exit 0
 fi
 
+# The token travels only in the Authorization header — never in a URL, argv or output.
+AUTH="Authorization: Bearer $TOKEN"
+
 # 1. create the deposition from zenodo.json
-resp="$(curl -sS -w '\n%{http_code}' -X POST "$API?access_token=$TOKEN" \
-  -H 'Content-Type: application/json' --data @"$METADATA")"
+resp="$(curl -sS -w '\n%{http_code}' -X POST "$API" \
+  -H "$AUTH" -H 'Content-Type: application/json' --data @"$METADATA")"
 status="${resp##*$'\n'}"
 body="${resp%$'\n'*}"
 case "$status" in 2*) ;; *) fail "$status" "$body" "POST $API" ;; esac
@@ -96,20 +99,21 @@ bucket="$(printf '%s' "$body" | jq -r '.links.bucket')"
 
 # 2. upload the PDF into the record's bucket
 fname="$(basename "$PDF")"
-resp="$(curl -sS -w '\n%{http_code}' -X PUT "$bucket/$fname?access_token=$TOKEN" \
-  -H 'Content-Type: application/octet-stream' --data-binary @"$PDF")"
+resp="$(curl -sS -w '\n%{http_code}' -X PUT "$bucket/$fname" \
+  -H "$AUTH" -H 'Content-Type: application/octet-stream' --data-binary @"$PDF")"
 status="${resp##*$'\n'}"
 body="${resp%$'\n'*}"
 case "$status" in 2*) ;; *) fail "$status" "$body" "PUT $bucket/$fname" ;; esac
 
 # 3. publish the record
-resp="$(curl -sS -w '\n%{http_code}' -X POST "$API/$dep_id/actions/publish?access_token=$TOKEN")"
+resp="$(curl -sS -w '\n%{http_code}' -X POST "$API/$dep_id/actions/publish" \
+  -H "$AUTH")"
 status="${resp##*$'\n'}"
 body="${resp%$'\n'*}"
 case "$status" in 2*) ;; *) fail "$status" "$body" "POST $API/$dep_id/actions/publish" ;; esac
 
-doi="$(printf '%s' "$body" | jq -r '.metadata.doi // .links.doi // empty')"
-html="$(printf '%s' "$body" | jq -r '.links.latest_html // empty')"
+doi="$(printf '%s' "$body" | jq -r '.metadata.doi // .doi // .links.doi // empty')"
+html="$(printf '%s' "$body" | jq -r '.links.latest_html // .links.html // empty')"
 [ -n "$doi" ] || { echo "error: published (HTTP $status) but no DOI in response" >&2; exit 1; }
 
 printf '%s\n' "$doi" >"$DOI_FILE"
