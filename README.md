@@ -18,6 +18,14 @@ nothing is estimated.
 
 Each directory holds the LaTeX source, the compiled PDF and the shared bibliography.
 
+## Publishing a paper
+
+Each paper is published as its own Zenodo record with the PDF as the record's file
+(so Zenodo shows the PDF preview and download); the series DOI stays the concept DOI.
+1. Add `papers/<dir>/zenodo.json` — copy an existing one, change title, date, description, keywords.
+2. Run `ZENODO_TOKEN=... scripts/publish-paper.sh papers/<dir>` (or `ZENODO_TOKEN_FILE=...`).
+3. The script writes the DOI to `papers/<dir>/zenodo.doi`; add it to the table above.
+
 ## Findings in one line each
 
 1. **Paper 1**: No for real application fixes at night-1 state — the local models find
