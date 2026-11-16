@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "title": "Planner and Worker: When a Cloud Planner over a Local Coder Pays Off",
+    "upload_type": "publication",
+    "publication_type": "report",
+    "publication_date": "2026-11-16",
+    "creators": [{"name": "Nott, Matthias", "affiliation": "Independent Research"}],
+    "description": "<p>The earlier reports asked whether a local open-weight model can act as a coding worker. This fourth report asks how it should be used: alone, or as the implementing layer (L2) under a cloud planner (L1) that writes work packages, reviews the result and retries or takes over on failure. Two local models served by Strata on one workstation (Gyro-L, Gyro-M) are compared with six cloud models on function-level sets, five small changes from a real repository and two larger multi-file changes, alone and in L1/L2 pairs.</p><p>Four findings stand out. First, on small single-file changes the local Gyro-L alone solves 14 of 15 at no cloud cost; a planner on top adds at most a few points and costs more than Sonnet alone in single-task groups. Second, on larger multi-file changes Sonnet as L1 over Gyro-L as L2 solves 4 of 4, like Sonnet alone, at 35 % less cloud cost but about six times the wall time; Gyro-L alone solves 3 of 4. Third, Sonnet over Haiku solves everything at 17 % less cloud cost and is faster than Sonnet alone. Fourth, the planner's waiting is a cost of its own: an L1 re-reads 35-80 thousand cached tokens per minute while its workers run, and one blocking wait per worker instead of periodic checks lowers its cost by about 11 % at equal pass rate.</p><p>We recommend a balanced default (local worker, cloud takeover), the hierarchy for large non-urgent work, Haiku as L2 when speed matters, and one switch between these regimes.</p><p>Fourth report of the PAI Reports series. Sources: https://github.com/mnott/PAI-Reports</p>",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "keywords": ["local language models", "coding agents", "agent hierarchies", "evaluation", "Apple silicon"],
+    "language": "eng",
+    "related_identifiers": [
+      {"identifier": "10.5281/zenodo.24274093", "relation": "isPartOf", "scheme": "doi", "resource_type": "publication-report"},
+      {"identifier": "10.5281/zenodo.24274094", "relation": "isSupplementedBy", "scheme": "doi", "resource_type": "software"},
+      {"identifier": "https://github.com/mnott/PAI-Reports", "relation": "isSupplementedBy", "scheme": "url"}
+    ]
+  }
+}

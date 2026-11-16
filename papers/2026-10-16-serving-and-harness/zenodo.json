@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "title": "Local Coding Agents on One Workstation, Second Night: What the Serving Stack, the Prompt and the Model Each Contribute",
+    "upload_type": "publication",
+    "publication_type": "report",
+    "publication_date": "2026-10-16",
+    "creators": [{"name": "Nott, Matthias", "affiliation": "Independent Research"}],
+    "description": "<p>The first night showed that open-weight models on one workstation could not yet replace a cloud worker on real application fixes, but its comparisons were run in blocks and its local servers were still defective. This second night repeats the question with paired arms: the two arms of a comparison start together on the same task, only one model server is loaded at a time, and the local runs are graded by the hidden tests of the fixes that actually landed.</p><p>Three findings stand out. First, naming the file and the function (the precise prompt) lifted the local Qwen3-Coder-30B-A3B worker from 1 of 9 to 5 of 9 passes against the orchestrator's specification; all four discordant pairs favoured the precise prompt (exact sign test p = 0.125, two-sided). Second, serving still decided the outcome: a second model family ran through a multimodal code path that never hit the prefix cache, so every turn re-read 40-50k tokens; after the fix, a smoke run fell from 55-61 s to 23-37 s and a one-function fix ran within about twice the time of the cloud reference. Third, a cloud plan written from the parent commit let three different local models pass a task that none of eight local precise or specification runs passed.</p><p>A hardware watchdog reset, with about 117 GB of model servers resident on a 128 GB machine, set the constraint for the rest of the night: one model server at a time. The samples are small and every statement is conditional on them. The final ranking is Sonnet 5.5 (4 of 4) ahead of GLM-5.3-flash and GLM-5.3 (3 of 4 each), Haiku 4.5 (2 of 4) and then the local models; no local model passed the three-file task.</p><p>Second report of the PAI Reports series. Sources: https://github.com/mnott/PAI-Reports</p>",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "keywords": ["local language models", "coding agents", "serving", "prompt design", "evaluation"],
+    "language": "eng",
+    "related_identifiers": [
+      {"identifier": "10.5281/zenodo.24274093", "relation": "isPartOf", "scheme": "doi", "resource_type": "publication-report"},
+      {"identifier": "https://github.com/mnott/PAI-Reports", "relation": "isSupplementedBy", "scheme": "url"}
+    ]
+  }
+}

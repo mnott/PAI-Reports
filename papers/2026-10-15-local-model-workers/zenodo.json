@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "title": "Local Models as Coding Workers and Retrieval Engines on a Single Workstation: An Overnight Measurement on Real Tasks, with the Instrumentation Built to Repeat It",
+    "upload_type": "publication",
+    "publication_type": "report",
+    "publication_date": "2026-10-15",
+    "creators": [{"name": "Nott, Matthias", "affiliation": "Independent Research"}],
+    "description": "<p>Can open-weight language models running on one desktop workstation take over the work that cloud models do today in an agentic software workflow, where a strong model plans and smaller worker models write code? And which local models should serve a document-management system on the same machine? We answer both questions with measurements taken in a single night on an Apple M5 Max with 128 GB of unified memory.</p><p>For coding, we replayed eight fixes that had already landed in a native PDF application: each worker started from the commit before the fix, received either the maintainer's own words or the orchestrator's written specification, and was graded by the hidden test that came with the real fix. With a specification, the cloud worker (Claude Sonnet 5.5) passed 6 of 7 tasks (86 %; 95 % Wilson interval 49-97 %), the best local model, Qwen3-Coder-30B-A3B, passed 3 of 19 (16 %; 6-38 %) and Qwen3.6-35B-A3B passed 1 of 17 (6 %; 1-27 %). The local models succeeded only on one-function fixes whose location the task named; their dominant failure was editing the visible call site instead of the code that owns the behaviour. Serving, not the models, was the first bottleneck: a prefix-cache defect made every local turn re-read its whole prompt, and fixing it cut time-to-first-token from 28-31 s to 0.6-6 s.</p><p>For document retrieval, local models are sufficient and preferable: Qwen3-Embedding-0.6B reached a recall@10 of 0.950 against 0.825 for the incumbent and embedded 1.8 times faster than the most accurate alternative. We describe the method, the instrumentation that makes the comparison repeatable with one command, and a routing policy that keeps coding in the cloud and retrieval at home.</p><p>First report of the PAI Reports series. Sources: https://github.com/mnott/PAI-Reports</p>",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "keywords": ["local language models", "coding agents", "embeddings", "evaluation", "Apple silicon"],
+    "language": "eng",
+    "related_identifiers": [
+      {"identifier": "10.5281/zenodo.24274093", "relation": "isPartOf", "scheme": "doi", "resource_type": "publication-report"},
+      {"identifier": "https://github.com/mnott/PAI-Reports", "relation": "isSupplementedBy", "scheme": "url"}
+    ]
+  }
+}

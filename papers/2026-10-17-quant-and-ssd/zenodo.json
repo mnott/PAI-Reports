@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "title": "Quantisation, Serving and Harness Repair: What It Takes to Run a Local Coder Beside Real Work",
+    "upload_type": "publication",
+    "publication_type": "report",
+    "publication_date": "2026-10-17",
+    "creators": [{"name": "Nott, Matthias", "affiliation": "Independent Research"}],
+    "description": "<p>The second night left a local worker that could finish small fixes once the serving stack was repaired and the prompt named the file; it left open what else separates a local model from a cloud worker. This third night narrows the question with nine candidates that ran fresh arms, paired precise and plan prompts on the same replay tasks, and one self-directed queue that ran to the morning.</p><p>Four findings stand out. First, quantisation decides, and the lift replicates across model families: 8 bit instead of 4 bit turned per-task instability into concentrated losses, and on a second family the same lift went from 4 of 6 to 5 of 6 on the identical protocol, at half the resident size. Second, the remaining failure classes are model-side, and one is harness-repairable: dotted tool names caused all of the night's dotted-name errors, every one in arms spawned before the repair hook was registered; invented absolute paths caused 130 path-guard events. Third, speed without instruction-following is worthless: the dense 30B model with the fastest streams of the night passed 0 of 5 graded arms. Fourth, a 125B MoE paged from SSD is usable (3 of 6, swap flat) but every decode token pays random expert-row page-ins: 3.0 tokens/s against 9.8 resident.</p><p>A morning head-to-head and a daylight build pass settled rank 1: the 30B-A3B 8-bit passes 4 of 4 gradeable log-size arms at 3.8-4.4 times the wall speed and roughly 31 GB resident, build-verified. The recommendation: the 30B-A3B 8-bit as resident coder, the 35B 8-bit as build-verified fallback, multi-file saves on the cloud coder.</p><p>Third report of the PAI Reports series. Sources: https://github.com/mnott/PAI-Reports</p>",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "keywords": ["local language models", "coding agents", "quantisation", "serving", "evaluation"],
+    "language": "eng",
+    "related_identifiers": [
+      {"identifier": "10.5281/zenodo.24274093", "relation": "isPartOf", "scheme": "doi", "resource_type": "publication-report"},
+      {"identifier": "https://github.com/mnott/PAI-Reports", "relation": "isSupplementedBy", "scheme": "url"}
+    ]
+  }
+}
