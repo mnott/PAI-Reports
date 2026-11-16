@@ -46,6 +46,38 @@ if [ "$pdf_count" -ne 1 ]; then
   exit 1
 fi
 
+# Bibliography check — runs before anything touches the network, --dry-run included.
+BIB="$DIR/Bibliography.bib"
+if [ -f "$BIB" ]; then
+  bad_fields="$(awk '
+    /^[ \t]*[A-Za-z0-9_-]+[ \t]*=/ {
+      f=$1; sub(/[ \t]*=.*$/,"",f)
+      if (tolower(f) ~ /^bdsk-/) print tolower(f)
+      else if (tolower(f) ~ /^(file|abstract|annote|keywords|date-added|date-modified|read|rating)$/) print tolower(f)
+    }' "$BIB" | sort -u)"
+  if [ -n "$bad_fields" ]; then
+    echo "error: $BIB contains private library fields: $(printf '%s ' $bad_fields)" >&2
+    echo "refusing to publish — run scripts/trim-bib.py" >&2
+    exit 1
+  fi
+
+  cited="$(cat "$DIR"/*.tex \
+    | tr -d '\n' \
+    | grep -oE '\\(cite|citep|citet|parencite|textcite|autocite|footcite)\*?([[:space:]]*\[[^]]*\])*[[:space:]]*\{[^}]*\}' \
+    | sed -E 's/.*\{([^}]*)\}/\1/' \
+    | tr ',' '\n' \
+    | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' \
+    | grep -v '^$' \
+    | sort -u \
+    | wc -l | tr -d '[:space:]')"
+  bib_entries="$(grep -cE '^[[:space:]]*@' "$BIB")"
+  if [ "$bib_entries" -gt "$cited" ]; then
+    echo "error: $BIB has $bib_entries entries but $DIR cites only $cited unique keys — extra entries would leak uncited library entries" >&2
+    echo "refusing to publish — run scripts/trim-bib.py" >&2
+    exit 1
+  fi
+fi
+
 BASE_URL="${ZENODO_BASE_URL:-https://zenodo.org}"
 API="$BASE_URL/api/deposit/depositions"
 
