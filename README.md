@@ -1,4 +1,4 @@
-# Local Model Workers — Lab Report Series
+# PAI Papers — Lab Report Series on Local and Hierarchical Coding Agents
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24273699.svg)](https://doi.org/10.5281/zenodo.24273699)
 
