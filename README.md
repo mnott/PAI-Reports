@@ -12,6 +12,7 @@ nothing is estimated.
 | 1 | 2026-10-15 | Can open-weight local models act as the workers in an agentic coding workflow? | lab report | [paper.pdf](papers/2026-10-15-local-model-workers/paper.pdf) |
 | 2 | 2026-10-16 | Can a local coding setup run beside normal work? (serving stack, prompt shape, harness repair) | lab report | [paper2.pdf](papers/2026-10-16-serving-and-harness/paper2.pdf) |
 | 3 | 2026-10-17 | Quantisation, serving and harness repair: what it takes to run a local coder beside real work | lab report — numbers pending daylight build verification | [paper3.pdf](papers/2026-10-17-quant-and-ssd/paper3.pdf) |
+| 4 | 2026-11-16 | Planner and worker: when a cloud planner over a local coder pays off | lab report | [paper4.pdf](papers/2026-11-16-planner-and-worker/paper4.pdf) |
 
 Each directory holds the LaTeX source, the compiled PDF and the shared bibliography.
 
@@ -28,6 +29,10 @@ Each directory holds the LaTeX source, the compiled PDF and the shared bibliogra
    SSD-paged 125B-class models complete real tasks at ~3 tok/s — paging, not the
    model, is the limit; the remaining failure classes (invented paths, dotted tool
    names) are model-side and partly harness-repairable.
+4. **Paper 4**: On small changes the local coder alone is the efficient choice (14/15, no
+   cloud cost); on larger multi-file changes a Sonnet planner over the local coder matches
+   Sonnet alone at 35 % less cloud cost and about six times the wall time; Sonnet over Haiku
+   is cheaper and faster than Sonnet alone; the planner's waiting is a cost of its own.
 
 ## Method notes
 
@@ -41,3 +46,9 @@ Each directory holds the LaTeX source, the compiled PDF and the shared bibliogra
 
 - arXiv submission of the series once the daylight build-verification pass
   confirms paper 3's rankings.
+
+## License and citation
+
+The reports are licensed under [CC BY 4.0](LICENSE). Each paper release is archived on
+[Zenodo](https://zenodo.org) with its own DOI; use the "Cite this repository" button on GitHub
+(from [CITATION.cff](CITATION.cff)) or the DOI shown on the release.

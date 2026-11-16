@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use these reports, please cite them as below."
+type: report
+title: "PAI Papers: Lab Report Series on Local and Hierarchical Coding Agents"
+abstract: >-
+  Measured experiments running agentic coding workers on local open-weight models on one
+  Apple-silicon workstation, against cloud yardsticks, and in a hierarchy where a cloud
+  planner directs local implementing workers.
+authors:
+  - family-names: Nott
+    given-names: Matthias
+license: CC-BY-4.0
+repository-code: "https://github.com/mnott/PAI-Papers"
+version: "paper4-2026-11-16"
+date-released: 2026-11-16
+keywords:
+  - local language models
+  - coding agents
+  - agent hierarchies
+  - evaluation

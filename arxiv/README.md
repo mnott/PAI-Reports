@@ -21,7 +21,7 @@ must confirm before submission. Tracked as the first post-night task.
 4. License: default arXiv non-exclusive (operator decision: CC-BY vs arXiv-only).
 5. Submit as new submission; lab-report series note in the comments field
    ("third in a series of lab reports, prior reports available at
-   github.com/mnott/local-models-papers").
+   github.com/mnott/PAI-Papers").
 
 ## Prepared artifacts
 - papers/2026-10-17-quant-and-ssd/paper3.tex + paper3.pdf (source of truth)

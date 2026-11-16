@@ -1,0 +1,417 @@
+%=====================================================
+%
+% Variables (same scheme as the sample document)
+%
+%=====================================================
+
+\def\doctype{article}
+
+\def\emptypages{false}
+\def\showparts{false}
+
+\def\ttitlepage{titlepage.tex}
+\def\ttitlepagetitletop{Planner and Worker}
+\def\ttitlepagesubtitletop{When a Cloud Planner over a Local Coder Pays Off}
+\def\ttitlepagetitlemiddle{Lab Report}
+\def\ttitlepagesubtitlemiddle{Measurements of 15--16 November 2026}
+
+\def\torganization{Independent Research}
+\def\tsubmissiondate{16 November 2026}
+\def\tversion{0.1 (draft)}
+\def\tauthor{Matthias Nott}
+\def\tcontact{~}
+\def\tcontactid{~}
+
+\def\tfooterleftlabelup{Title}
+\def\tfooterleftlabeldown{Author}
+\def\tfooterleftup{Local Coding Agents, Report 4}
+\def\tfooterleftdown{Matthias Nott}
+\def\tfootermiddleup{Planner and Worker}
+\def\tfootermiddledown{Lab Report}
+\def\tfooterrightlabelup{Date}
+\def\tfooterrightlabeldown{Version}
+\def\tfooterrightup{November 2026}
+\def\tfooterrightdown{0.1}
+
+\def\showtitlepage{true}
+\def\showlistofs{true}
+\def\showtoc{true}
+\def\showlot{true}
+\def\showlof{false}
+\def\showloe{false}
+\def\showlod{false}
+
+\def\showreferences{true}
+\def\showappendix{false}
+\def\showendnotes{false}
+\def\showanyglossary{false}
+\def\showacronyms{false}
+\def\showglossary{false}
+\def\showstatic{false}
+\def\showindex{false}
+
+\def\showpageheaders{true}
+\def\showpagefooters{true}
+\def\showwordcount{false}
+\def\showwordcountback{false}
+
+\input{templates/cfg/zz_layout}
+
+\setcounter{tocdepth}{2}
+
+\usepackage[
+  style=apa
+, citestyle=authoryear
+, backend=biber
+, maxnames=3
+, minnames=1
+, sorting=nyt
+, sortcites=true
+, block=space
+, safeinputenc
+, natbib=true
+, backref=true
+, uniquename=init]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Bibliography.bib}
+\input{templates/cfg/zz_config_bib}
+
+\usepackage{indentfirst}
+
+\newcommand{\cmd}[1]{\texttt{#1}}
+
+% Alternate row colours in every table (xcolor is loaded with the table option by the layout)
+% Breathing room between tables and the running text
+\setlength{\intextsep}{16pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{18pt plus 2pt minus 4pt}
+\setlength{\floatsep}{16pt plus 2pt minus 2pt}
+
+\definecolor{rowtint}{gray}{0.93}
+\AtBeginEnvironment{table}{\global\csname @rowcolorstrue\endcsname\rowcolors{2}{rowtint}{white}}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setcounter{secnumdepth}{2}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\begin{document}
+
+%=====================================================
+% Title page and abstract
+%=====================================================
+
+\input{tex/\ttitlepage}
+
+\begin{center}
+\begin{minipage}{0.86\textwidth}
+\section*{Abstract}
+
+The earlier reports asked whether a local open-weight model can act as a coding worker. This fourth report asks
+how it should be used: alone, or as the implementing layer (L2) under a cloud planner (L1) that writes work
+packages, reviews the result and retries or takes over on failure. Two local models served by Strata on one
+workstation (Gyro-L, Gyro-M) are compared with six cloud models on function-level sets, five small changes from a
+real repository and two larger multi-file changes, alone and in L1/L2 pairs. Four findings stand out. First, on
+small single-file changes the local Gyro-L alone solves 14 of 15 at no cloud cost; a planner on top adds at most a
+few points and costs more than Sonnet alone in single-task groups. Second, on larger multi-file changes Sonnet as
+L1 over Gyro-L as L2 solves 4 of 4, like Sonnet alone, at 35\,\% less cloud cost but about six times the wall time;
+Gyro-L alone solves 3 of 4. Third, Sonnet over Haiku solves everything at 17\,\% less cloud cost and is faster than
+Sonnet alone. Fourth, the planner's waiting is a cost of its own: an L1 re-reads 35--80 thousand cached tokens per
+minute while its workers run, and one blocking wait per worker instead of periodic checks lowers its cost by about
+11\,\% at equal pass rate. We recommend a balanced default (local worker, cloud takeover), the hierarchy for large
+non-urgent work, Haiku as L2 when speed matters, and one switch between these regimes.
+
+\end{minipage}
+\end{center}
+
+\clearpage
+
+%=====================================================
+% Table of contents and list of tables
+%=====================================================
+
+\sequals{\showpageheaders}{true}{
+	\pagestyle{fancy}
+	\fancyhead{}
+	\fancyhead[RO,LE]{\thepage}
+	\fancyhead[LO]{\slshape CONTENTS}
+	\fancyhead[RE]{\slshape CONTENTS}
+}{}
+\sequals{\showpagefooters}{true}{\fancyfoot[C]{}}{}
+\pdfbookmark[-1]{\contentsname}{toc}
+\tableofcontents
+\addtocontents{lot}{\protect\vspace{10pt}}
+\listoftables
+\clearpage
+
+\sequals{\showpageheaders}{true}{
+	\pagestyle{fancy}
+	\fancyhead{}
+	\fancyhead[LE,RO]{\thepage}
+	\fancyhead[RE]{\slshape \rightmark}
+	\fancyhead[LO]{\slshape \rightmark}
+}{}
+\sequals{\showpagefooters}{true}{\fancyfoot[C]{\pfooter}}{}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection.\ #1}{\thesection.\ #1}}
+\renewcommand{\subsectionmark}[1]{}
+\clearpage
+
+%=====================================================
+% Body
+%=====================================================
+
+\section{Introduction}\label{sec:intro}
+
+The first three reports established that open-weight models on one workstation can finish real coding tasks once
+the serving stack, the prompt shape and the harness are right, and identified which models and quantisations do it
+best. They measured the local model as the only worker. In daily use, however, the agent setup is hierarchical: an
+orchestrating session (L0) hands work to planners (L1), and planners hand concrete changes to implementing
+workers (L2). The questions of this report are therefore economic and structural. When does a local model alone
+suffice? When does a cloud planner on top pay for itself? Which planner and which worker, and at what cost in wall
+time? All workers were started through PAI \citep{Nott-2026aa} with Claude Code as the agent harness
+\citep{Anthropic-2026aa}.
+
+\section{Setting}\label{sec:setting}
+
+All local runs were served by Strata v0.2.13 with a Metal port on one Apple-silicon workstation (128\,GB unified
+memory), one model at a time on a single port, without reasoning (reasoning effort none), with speculative
+decoding through an MTP head (draft acceptance about 90\,\%). Measured pure decode speed at the server was
+91~tokens/s for Gyro-L and 112~tokens/s for Gyro-M.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Models of this report}\label{tab:models4}
+\begin{tabular}{P{3.6cm}P{2.6cm}P{7.4cm}}
+\toprule
+Model & Placement & Role \\
+\midrule
+Gyro-L & local & Worker (L2) and stand-alone; pair-trellis experts, separate per-layer embedding table \\
+Gyro-M & local & Worker (L2) and stand-alone \\
+Claude Sonnet \citep{Anthropic-2026ab} & cloud & Planner (L1), stand-alone yardstick \\
+Claude Opus & cloud & Stand-alone yardstick \\
+Claude Haiku & cloud & Worker (L2) \\
+GLM, GLM-fast & cloud & Planner and worker pair; stand-alone \\
+Kimi & cloud & Planner and worker pair; stand-alone \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Method}\label{sec:method}
+
+\subsection{Task sets}
+
+\emph{short}: 20 questions with exact answers about code. \emph{easy} and \emph{hard}: 40 function-level Python
+tasks each, graded by hidden tests. \emph{real (small)}: five changes taken from the PAI repository (bug fixes and
+small features touching one to three files), graded by hidden behaviour tests derived from the original commits and
+restricted to what the task text states. \emph{real (large)}: two multi-file changes from the same repository
+(session identifiers in notes across the session and router modules; handling of renamed notes in the storage
+registry), each requiring two to four coordinated edits. For every task the reference solution passes its tests
+and the unchanged starting code fails them; tasks do not depend on the state of the machine.
+
+\subsection{Hierarchy}
+
+Related tasks are grouped and each group gets one planner (L1): the small tasks form three groups (worker
+configuration, build tooling, sessions), each large task its own group. Per task the L1 reads only what it needs,
+writes a self-contained work package (cause, exact target, required behaviour with edge cases, the proof to bring)
+and starts one L2 on its own clone. It reviews only the diff and the visible test result, allows one retry with a
+sharper package, and takes over with the smallest correct edit if the retry fails. Two waiting styles were
+compared: \emph{polling} (periodic checks of the worker) and \emph{blocking} (all workers dispatched first, then
+one long blocking wait per worker).
+
+\subsection{Measures}
+
+Pass rate on the hidden tests; retries and takeovers; wall time per run; cloud cost as list price of the cloud
+layers (the local layer costs nothing), and for providers with other price schedules (GLM, Kimi) tokens per layer.
+A loop guard stops a worker that repeats an identical write or command; a stopped run keeps its result.
+
+\section{Results}\label{sec:results}
+
+\subsection{Models alone}
+
+Table~\ref{tab:alone} gives the share of tasks each model solves on its own, Table~\ref{tab:speed} the time it
+needs per task and its effective output speed.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Models alone: share of tasks solved}\label{tab:alone}
+\begin{tabular}{llrrrr}
+\toprule
+Model & Where & easy & hard & short & real \\
+\midrule
+Gyro-L & local & 95.0\,\% & 86.7\,\% & 92.0\,\% & 93\,\% \\
+Gyro-M & local & 97.5\,\% & 76.7\,\% & 81.0\,\% & 80\,\% \\
+Sonnet & cloud & 100\,\% & 100\,\% & 100\,\% & 100\,\% \\
+Opus & cloud & 100\,\% & 100\,\% & 100\,\% & 100\,\% \\
+GLM & cloud & 99.5\,\% & 98.0\,\% & 100\,\% & 84\,\% \\
+GLM-fast & cloud & 100\,\% & 90.5\,\% & 99\,\% & 96\,\% \\
+Kimi & cloud & 98.3\,\% & 95.0\,\% & 100\,\% & -- \\
+\bottomrule
+\end{tabular}
+\par\smallskip{\footnotesize\raggedright easy, hard and short are the function-level and question sets; real is the five small repository changes.\par}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Models alone: speed}\label{tab:speed}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & \multicolumn{4}{c}{Seconds per task} & \multicolumn{2}{c}{Tokens/s} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-7}
+Model & easy & hard & short & real & sets & real \\
+\midrule
+Gyro-L & 3.6 & 11.0 & 2.3 & 369 & 63 & 25 \\
+Gyro-M & 5.5 & 21.2 & 1.6 & 207 & 80 & 43 \\
+Sonnet & 4.5 & 5.7 & 3.7 & 130 & 100 & 39 \\
+Opus & 5.1 & 6.2 & 4.7 & 171 & 80 & 48 \\
+GLM & 9.3 & 15.3 & 7.2 & 346 & 53 & 51 \\
+GLM-fast & 10.9 & 23.8 & 4.6 & 490 & 43 & 39 \\
+Kimi & 7.0 & 13.1 & 5.4 & -- & 38 & -- \\
+\bottomrule
+\end{tabular}
+\par\smallskip{\footnotesize\raggedright Seconds per task: mean wall time for one task of each set, from start to graded result. Tokens/s: output tokens per second of wall time over the three sets together and over the real changes; it includes waiting for tools and is therefore lower than the pure decode speed.\par}
+\end{table}
+
+Gyro-L is the stronger local worker on hard and real tasks; Gyro-M decodes faster but fails more of the harder
+tasks. The cloud models other than GLM solve the small repository changes completely. On the real changes the
+local models need 1.6 (Gyro-M) to 2.8 (Gyro-L) times the wall time of Sonnet per task.
+
+\subsection{Hierarchy on small changes}
+
+Table~\ref{tab:small} compares the planner and worker pairs on the five small changes with Sonnet and with
+Gyro-L working alone.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Hierarchy on five small repository changes}\label{tab:small}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrlrr}
+\toprule
+Setup & Runs & Passed & Retries / takeovers & Cloud per run & Wall per run \\
+\midrule
+Sonnet alone & 5 & 25/25 & -- & \$0.72 & 11.5\,min \\
+Gyro-L alone & 3 & 14/15 & -- & \$0 & 30.9\,min \\
+Sonnet $\rightarrow$ Gyro-L, polling & 5 & 22/24 & 2 / 1 & \$0.61 ($-15$\,\%) & 22.3\,min \\
+Sonnet $\rightarrow$ Gyro-L, blocking & 3 & 15/15 & 1 / 1 & \$0.56 ($-22$\,\%) & 27.1\,min \\
+Sonnet $\rightarrow$ Gyro-M & 3 & 13/14 & 0 / 0 & \$0.53 ($-26$\,\%) & 21.5\,min \\
+Sonnet $\rightarrow$ Haiku & 3 & 15/15 & 1 / 0 & \$0.60 ($-17$\,\%) & 8.5\,min \\
+GLM $\rightarrow$ GLM-fast & 3 & 15/15 & 0 / 0 & 135k out, 9.8M cache read & 91\,min \\
+Kimi $\rightarrow$ Kimi & 3 & 15/15 & 1 / 0 & 32k out, 4.4M cache read & 40\,min \\
+\bottomrule
+\end{tabular}}
+\par\smallskip{\footnotesize\raggedright Three groups of related changes, one planner each. Cloud cost per run compared with Sonnet alone. GLM and Kimi are given in planner tokens per run; a Sonnet planner uses about 16 thousand output and 0.9 million cache-read tokens per run.\par}
+\end{table}
+
+Every pair with Sonnet as planner costs less than Sonnet alone. The saving comes from the two groups that hold
+two related changes each; in the group with a single change the pairs cost more than Sonnet alone on that change
+(\$0.10--0.11 against \$0.07), because the planner's understanding of the code is not shared with a second
+task. Against Gyro-L working alone the planner adds at most one solved change in fifteen.
+
+\subsection{Hierarchy on larger changes}
+
+Table~\ref{tab:large} shows the two larger multi-file changes, each handled by its own planner.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Hierarchy on two larger multi-file changes}\label{tab:large}
+\begin{tabular}{lrrlrr}
+\toprule
+Setup & Runs & Passed & Retries / takeovers & Cloud per run & Wall per run \\
+\midrule
+Sonnet alone & 2 & 4/4 & -- & \$0.77 & 4.3\,min \\
+Gyro-L alone & 2 & 3/4 & -- & \$0 & 29.9\,min \\
+Sonnet $\rightarrow$ Gyro-L, blocking & 2 & 4/4 & 2 / 0 & \$0.50 ($-35$\,\%) & 25.4\,min \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Here the planner pays: both retries turned a failed first attempt of the local worker into a pass, the pair
+matches Sonnet alone at a third less cloud cost, and it beats the local worker alone. The price is wall time, about
+six times that of Sonnet alone.
+
+\subsection{Cost of the planner}
+
+While its workers run, a planner re-reads its cached context on every turn: 35 to 80 thousand cached tokens per
+minute of wall time, for every planner model measured. A slow worker therefore makes the planner expensive. With
+blocking waits the planner's cost fell by about 11\,\% at equal pass rate (Table~\ref{tab:small}, polling against
+blocking), and its cached reads per minute fell from 47--59 to 24--40 thousand. GLM and Kimi as planners reach full
+quality but need two to eight times Sonnet's tokens and two to four times its wall time. In this setup GLM no longer
+earns a place: alone it solves fewer real changes than every model but Gyro-M (84\,\%), and as a planner it is the
+slowest and most token-hungry option (91\,min and about 9.8 million cache-read tokens per run, against 22\,min and
+0.9 million for Sonnet over Gyro-L).
+
+\section{Discussion}\label{sec:discussion}
+
+The value of a planner depends on the size of the work. On small, well-described changes the local worker alone is
+the efficient choice; a planner spends about as much understanding the change as a cloud model spends doing it.
+On larger work, where a single model loses track, the planner's diagnosis and its one targeted retry restore full
+quality while the implementation tokens stay local. The trade-off is time: the local worker is several times slower
+than a cloud model doing the work itself. Haiku as worker inverts the trade-off: full quality, faster than Sonnet
+alone and still cheaper, at the cost of doing no work locally. Grouping related work under one planner and making
+the planner wait without polling are the two structural levers; both are cheap to enforce in the orchestration
+layer.
+
+\section{Recommendations}\label{sec:recommendations}
+
+The results suggest three layers with distinct jobs (Table~\ref{tab:roles}) and a route that depends on the size
+of the work and on whether time or cloud budget matters more (Table~\ref{tab:modes}).
+
+\begin{table}[H]
+\centering
+\small
+\caption{Layers and their jobs}\label{tab:roles}
+\begin{tabular}{P{1.2cm}P{3.2cm}P{9.2cm}}
+\toprule
+Layer & Model & Job \\
+\midrule
+L0 & Opus (the operator's session) & Understands the request, groups related work, chooses the route by size \\
+L1 & Sonnet & Plans a group of related changes: work packages, review of diff and test result, one retry, takeover \\
+L2 & Gyro-L (local), or Haiku & Implements one work package \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Route by mode and size of the work}\label{tab:modes}
+\begin{tabular}{P{1.7cm}P{4.6cm}P{5.0cm}P{2.4cm}}
+\toprule
+Mode & Single small change & Several related or one larger multi-file change & On failure \\
+\midrule
+speed & L0 $\rightarrow$ Sonnet & L0 $\rightarrow$ Sonnet (L1) $\rightarrow$ Haiku (L2) & Sonnet takes over \\
+balanced & L0 $\rightarrow$ Gyro-L (L2), no planner & L0 $\rightarrow$ Sonnet (L1) $\rightarrow$ Gyro-L (L2) & Sonnet takes over \\
+budget & L0 $\rightarrow$ Gyro-L (L2), no planner & L0 $\rightarrow$ Sonnet (L1) $\rightarrow$ Gyro-L (L2) & Sonnet only after a failed retry \\
+\bottomrule
+\end{tabular}
+\par\smallskip{\footnotesize\raggedright speed favours wall time (Sonnet alone 11.5\,min, Sonnet over Haiku
+8.5\,min per run of five small changes); balanced and budget keep the implementation local (Sonnet over Gyro-L
+\$0.50 instead of \$0.77 on the larger changes). balanced is the default.\par}
+\end{table}
+
+Beyond the route, the planner should follow three rules: group related work under one planner, wait for its
+workers with one blocking call each, and review only the diff and the test result. A planner is not started for a
+single small change.
+
+These recommendations are implemented in PAI \citep{Nott-2026aa}. The regime is one setting,
+\cmd{pai worker mode speed|balanced|budget}, persisted in the worker configuration and shown in the status line;
+\emph{balanced} is the default. A session marked urgent (\cmd{/now}) runs as \emph{speed} while the mark is
+set. Orchestration requests for the same repository that arrive within a short window (20\,s by default) are
+merged into one planner job; planners wait for their workers with one blocking call each and review only the diff
+and the test result; a loop guard stops a local worker after three identical writes.
+
+\section{Limitations}\label{sec:limitations}
+
+The larger-change result rests on two tasks with two runs each; five to eight further multi-file changes are
+needed before a size threshold for delegation is fixed. All repository tasks come from one TypeScript code base.
+Local and cloud runs partly overlapped in time and shared the harness's test runner, which lengthens wall times
+slightly for both. Cloud costs are list prices; under a subscription they translate into quota. Local models ran
+without reasoning; a reasoning configuration was not measured.
+
+\clearpage
+\markboth{\MakeUppercase{\slshape References}}{}
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\printbibliography[title={References}]
+
+\end{document}
