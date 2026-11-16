@@ -1,0 +1,44 @@
+{
+  "title": "PAI Papers: Lab Report Series on Local and Hierarchical Coding Agents",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Nott, Matthias",
+      "affiliation": null
+    }
+  ],
+  "description": "<p>Measured experiments running agentic coding workers on local open-weight models on one Apple-silicon workstation, against cloud yardsticks, and in a hierarchy where a cloud planner directs local implementing workers.</p><p>This record is the source archive of the series. Each paper has its own record with the PDF to read and download:</p><ul><li>Paper 1: <a href=\"https://doi.org/10.5281/zenodo.24274880\">Local Models as Coding Workers and Retrieval Engines on a Single Workstation</a></li><li>Paper 2: <a href=\"https://doi.org/10.5281/zenodo.24274884\">Local Coding Agents on One Workstation, Second Night</a></li><li>Paper 3: <a href=\"https://doi.org/10.5281/zenodo.24274891\">Quantisation, Serving and Harness Repair</a></li><li>Paper 4: <a href=\"https://doi.org/10.5281/zenodo.24274754\">Planner and Worker: When a Cloud Planner over a Local Coder Pays Off</a></li></ul>\n",
+  "license": "CC-BY-4.0",
+  "keywords": [
+    "local language models",
+    "coding agents",
+    "agent hierarchies",
+    "evaluation"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.24274880",
+      "relation": "hasPart",
+      "scheme": "doi",
+      "resource_type": "publication-report"
+    },
+    {
+      "identifier": "10.5281/zenodo.24274884",
+      "relation": "hasPart",
+      "scheme": "doi",
+      "resource_type": "publication-report"
+    },
+    {
+      "identifier": "10.5281/zenodo.24274891",
+      "relation": "hasPart",
+      "scheme": "doi",
+      "resource_type": "publication-report"
+    },
+    {
+      "identifier": "10.5281/zenodo.24274754",
+      "relation": "hasPart",
+      "scheme": "doi",
+      "resource_type": "publication-report"
+    }
+  ]
+}
