@@ -14,7 +14,7 @@ nothing is estimated.
 | 1 | 2026-10-15 | Can open-weight local models act as the workers in an agentic coding workflow? | lab report | [paper.pdf](papers/2026-10-15-local-model-workers/paper.pdf) |
 | 2 | 2026-10-16 | Can a local coding setup run beside normal work? (serving stack, prompt shape, harness repair) | lab report | [paper2.pdf](papers/2026-10-16-serving-and-harness/paper2.pdf) |
 | 3 | 2026-10-17 | Quantisation, serving and harness repair: what it takes to run a local coder beside real work | lab report — numbers pending daylight build verification | [paper3.pdf](papers/2026-10-17-quant-and-ssd/paper3.pdf) |
-| 4 | 2026-11-16 | Planner and worker: when a cloud planner over a local coder pays off | lab report | [paper4.pdf](papers/2026-11-16-planner-and-worker/paper4.pdf) · [DOI](https://doi.org/10.5281/zenodo.24274094) |
+| 4 | 2026-11-16 | Planner and worker: when a cloud planner over a local coder pays off | lab report | [paper4.pdf](papers/2026-11-16-planner-and-worker/paper4.pdf) · [DOI](https://doi.org/10.5281/zenodo.24274754) |
 
 Each directory holds the LaTeX source, the compiled PDF and the shared bibliography.
 
