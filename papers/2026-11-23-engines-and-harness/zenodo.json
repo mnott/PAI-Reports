@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "title": "Engines, Quantisation, and the Harness: Inkling 2 Mini, Hy4-Flash, and Signal 2 as Local Coding Workers",
+    "upload_type": "publication",
+    "publication_type": "report",
+    "publication_date": "2026-11-23",
+    "creators": [{"name": "Nott, Matthias", "affiliation": "Independent Research"}],
+    "description": "<p>The fourth report fixed the roles of a local worker and a cloud planner. This fifth report asks which local model and which serving engine should fill the worker role, and what the agent harness contributes. On one workstation with 128 GB of unified memory, ten setups were run through the same bench: 20 questions, 40 easy and 40 hard function tasks written to disk without execution, and five repository changes graded by hidden tests. Gyro-L on the Strata engine is the reference (19/20, 38/40, 35/40, and 10 of 10 real tasks over two clean runs).</p><p>Four findings stand out. First, Signal 2, a smaller model on the same engine, reaches the function-level sets within three tasks and passes 8 of 10 real tasks with about 31 GB on the GPU against 76 GB wired for Gyro-L; two instances side by side pass 8 of 10 as well and deliver 6.85 passed real tasks per hour against 4.56 for one Gyro-L. Second, Inkling 2 Mini is fast and passes the function sets, but passes only 2-3 of 5 real tasks on every MLX engine and on Strata; of its 22 real-task failures 12 are stalls (no edit in 20 minutes) and 7 are faults of our own harness, only 2 are loops and 1 is a wrong fix. Third, fixing the harness faults and rewriting the stall and loop rules changed behaviour (edits from minute 6 instead of a 20-minute stall) and gave 3 of 4 tasks on one validation run; the loop guard turned out to be blind because other hooks rewrite tool input. Fourth, three Strata releases changed no kernel that Gyro-L uses; a barrier-free GEMV patch is bit-identical and unmeasurable. All real-task results rest on one or two runs of five self-written tasks on one machine.</p><p>Fifth report of the PAI Reports series. Sources: https://github.com/mnott/PAI-Reports</p>",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "keywords": ["local language models", "coding agents", "inference engines", "quantisation", "agent harness", "evaluation", "Apple silicon"],
+    "language": "eng",
+    "related_identifiers": [
+      {"identifier": "10.5281/zenodo.24274093", "relation": "isPartOf", "scheme": "doi", "resource_type": "publication-report"},
+      {"identifier": "10.5281/zenodo.24274094", "relation": "isSupplementedBy", "scheme": "doi", "resource_type": "software"},
+      {"identifier": "https://github.com/mnott/PAI-Reports", "relation": "isSupplementedBy", "scheme": "url"}
+    ]
+  }
+}

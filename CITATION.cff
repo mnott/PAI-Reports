@@ -11,7 +11,7 @@ authors:
     given-names: Matthias
 license: CC-BY-4.0
 repository-code: "https://github.com/mnott/PAI-Reports"
-version: "paper4-2026-11-16"
+version: "paper5-2026-11-23"
 date-released: 2026-11-16
 keywords:
   - local language models

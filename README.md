@@ -15,6 +15,7 @@ nothing is estimated.
 | 2 | 2026-10-16 | Can a local coding setup run beside normal work? (serving stack, prompt shape, harness repair) | lab report | [paper2.pdf](papers/2026-10-16-serving-and-harness/paper2.pdf) · [DOI](https://doi.org/10.5281/zenodo.24274884) |
 | 3 | 2026-10-17 | Quantisation, serving and harness repair: what it takes to run a local coder beside real work | lab report — numbers pending daylight build verification | [paper3.pdf](papers/2026-10-17-quant-and-ssd/paper3.pdf) · [DOI](https://doi.org/10.5281/zenodo.24274891) |
 | 4 | 2026-11-16 | Planner and worker: when a cloud planner over a local coder pays off | lab report | [paper4.pdf](papers/2026-11-16-planner-and-worker/paper4.pdf) · [DOI](https://doi.org/10.5281/zenodo.24274754) |
+| 5 | 2026-11-23 | Engines, quantisation and the harness: which local model and engine make the better worker (Inkling 2 Mini, Hy4-Flash, Signal 2)? | lab report | [paper5.pdf](papers/2026-11-23-engines-and-harness/paper5.pdf) · DOI pending |
 
 Each directory holds the LaTeX source, the compiled PDF and the shared bibliography.
 
@@ -44,6 +45,10 @@ Each paper is published as its own Zenodo record with the PDF as the record's fi
    cloud cost); on larger multi-file changes a Sonnet planner over the local coder matches
    Sonnet alone at 35 % less cloud cost and about six times the wall time; Sonnet over Haiku
    is cheaper and faster than Sonnet alone; the planner's waiting is a cost of its own.
+5. **Paper 5**: The model family matters more than the engine version: Signal 2, a smaller model,
+   passes 8 of 10 real tasks in 31 GB and two instances deliver 6.85 passed tasks per hour against 4.56
+   for one Gyro-L; Inkling 2 Mini is fast but passes only 2-3 of 5 real tasks, and 7 of its 22 failures
+   were faults of our own harness, which the loop guard could not see.
 
 ## Method notes
 
