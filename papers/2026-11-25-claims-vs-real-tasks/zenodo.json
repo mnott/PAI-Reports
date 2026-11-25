@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "title": "Claimed and Measured: Gyro-S v2 on Real Coding Tasks, and Why the Test Needs Testing Too",
+    "upload_type": "publication",
+    "publication_type": "report",
+    "publication_date": "2026-11-25",
+    "creators": [{"name": "Nott, Matthias", "affiliation": "Independent Research"}],
+    "description": "<p>A model announcement claims 18% less drift on held-out text, 27% less on tool calls and 14% less on code for Gyro-S v2. This report runs the same bench as report 5 - 20 questions, 40 easy and 40 hard graded function tasks, and five replayed real repository fixes judged by hidden tests - on Gyro-S v2 alone and in parallel with Signal 2, against Signal 2's own reference runs. Alone it passes 8/20, 37/40, 8/40 and 3 of 5 real tasks; beside Signal 2, 15/20, 35/40, 32/40 and 2 of 5.</p><p>Its failures are behavioural: early stops with missing answers (28 of 40 hard answers missing), announcing a step and ending the turn without doing it (7 guard hits alone), and identical-write loops (14 guard hits in the dual run). A model-specific workaround - raising the announced-no-action cap from 2 to 6 for Gyro-S only - coincides with the jump from 8/40 to 32/40, so that gain is confounded.</p><p>Two instrument faults of the same night would have produced wrong verdicts: a provider registered disabled was logged as done with 1-second walls and 0 passes (Gyro-S would have scored 0%), and a real task rewrote the bench's shared config so the next two tasks were refused in 1 second (a code-graph off arm would have read 3/5). Both were found and fixed: the bench now resolves the provider before the series, records refused starts as errors, and rewrites its own config before every task.</p><p>With one run per cell and a spread of 8/20 against 15/20 on the same short set, no ranking of the two models follows; the operational choice is that Signal 2 stays the local worker and the Gyro-S v2 runtime is stopped. A real test only counts once the test itself has been verified.</p><p>Sixth report of the PAI Reports series. Sources: https://github.com/mnott/PAI-Reports</p>",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "keywords": ["local language models", "coding agents", "inference engines", "agent harness", "evaluation", "Apple silicon", "instrumentation"],
+    "language": "eng",
+    "related_identifiers": [
+      {"identifier": "10.5281/zenodo.24274093", "relation": "isPartOf", "scheme": "doi", "resource_type": "publication-report"},
+      {"identifier": "10.5281/zenodo.24274094", "relation": "isSupplementedBy", "scheme": "doi", "resource_type": "software"},
+      {"identifier": "https://github.com/mnott/PAI-Reports", "relation": "isSupplementedBy", "scheme": "url"}
+    ]
+  }
+}

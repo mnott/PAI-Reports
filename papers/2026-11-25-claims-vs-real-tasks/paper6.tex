@@ -1,0 +1,336 @@
+%=====================================================
+%
+% Variables (same scheme as the sample document)
+%
+%=====================================================
+
+\def\doctype{article}
+
+\def\emptypages{false}
+\def\showparts{false}
+
+\def\ttitlepage{titlepage.tex}
+\def\ttitlepagetitletop{Claimed and Measured}
+\def\ttitlepagesubtitletop{Gyro-S v2 on Real Coding Tasks, and Why the Test Needs Testing Too}
+\def\ttitlepagetitlemiddle{Lab Report}
+\def\ttitlepagesubtitlemiddle{Measurements of 24--25 November 2026}
+
+\def\torganization{Independent Research}
+\def\tsubmissiondate{25 November 2026}
+\def\tversion{0.1 (draft)}
+\def\tauthor{Matthias Nott}
+\def\tcontact{~}
+\def\tcontactid{~}
+
+\def\tfooterleftlabelup{Title}
+\def\tfooterleftlabeldown{Author}
+\def\tfooterleftup{Local Coding Agents, Report 6}
+\def\tfooterleftdown{Matthias Nott}
+\def\tfootermiddleup{Claims and Real Tasks}
+\def\tfootermiddledown{Lab Report}
+\def\tfooterrightlabelup{Date}
+\def\tfooterrightlabeldown{Version}
+\def\tfooterrightup{November 2026}
+\def\tfooterrightdown{0.1}
+
+\def\showtitlepage{true}
+\def\showlistofs{true}
+\def\showtoc{true}
+\def\showlot{true}
+\def\showlof{false}
+\def\showloe{false}
+\def\showlod{false}
+
+\def\showreferences{true}
+\def\showappendix{false}
+\def\showendnotes{false}
+\def\showanyglossary{false}
+\def\showacronyms{false}
+\def\showglossary{false}
+\def\showstatic{false}
+\def\showindex{false}
+
+\def\showpageheaders{true}
+\def\showpagefooters{true}
+\def\showwordcount{false}
+\def\showwordcountback{false}
+
+\input{templates/cfg/zz_layout}
+
+\setcounter{tocdepth}{2}
+
+\usepackage[
+  style=apa
+, citestyle=authoryear
+, backend=biber
+, maxnames=3
+, minnames=1
+, sorting=nyt
+, sortcites=true
+, block=space
+, safeinputenc
+, natbib=true
+, backref=true
+, uniquename=init]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Bibliography.bib}
+\input{templates/cfg/zz_config_bib}
+
+\usepackage{indentfirst}
+
+\newcommand{\cmd}[1]{\texttt{#1}}
+
+% Alternate row colours in every table (xcolor is loaded with the table option by the layout)
+% Breathing room between tables and the running text
+\setlength{\intextsep}{16pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{18pt plus 2pt minus 4pt}
+\setlength{\floatsep}{16pt plus 2pt minus 2pt}
+
+\definecolor{rowtint}{gray}{0.93}
+\AtBeginEnvironment{table}{\global\csname @rowcolorstrue\endcsname\rowcolors{2}{rowtint}{white}}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setcounter{secnumdepth}{2}
+
+\begin{document}
+
+%=====================================================
+% Title page and abstract
+%=====================================================
+
+\input{tex/\ttitlepage}
+
+\begin{center}
+\begin{minipage}{0.86\textwidth}
+\section*{Abstract}
+
+A model announcement claims 18\,\% less drift on held-out text, 27\,\% less on tool calls and 14\,\% less on code for
+Gyro-S v2. This report runs the same bench as report 5 --- 20 questions, 40 easy and 40 hard graded function tasks,
+and five replayed real repository fixes judged by hidden tests --- on Gyro-S v2 alone and in parallel with Signal 2,
+against Signal 2's own reference runs. Alone it passes 8/20, 37/40, 8/40 and 3 of 5 real tasks; beside Signal 2,
+15/20, 35/40, 32/40 and 2 of 5. Its failures are behavioural: early stops with missing answers (28 of 40 hard
+answers missing), announcing a step and ending the turn without doing it (7 guard hits alone), and identical-write
+loops (14 guard hits in the dual run). A model-specific workaround --- raising the announced-no-action cap from 2 to
+6 for Gyro-S only --- coincides with the jump from 8/40 to 32/40, so that gain is confounded. Two instrument faults
+of the same night would have produced wrong verdicts: a provider registered disabled was logged as ``done'' with
+1-second walls and 0 passes (Gyro-S would have scored 0\,\%), and a real task rewrote the bench's shared config so
+the next two tasks were refused in 1 second (a code-graph ``off'' arm would have read 3/5). Both were found and
+fixed: the bench now resolves the provider before the series, records refused starts as errors, and rewrites its own
+config before every task. With one run per cell and a spread of 8/20 against 15/20 on the same short set, no ranking
+of the two models follows; the operational choice is that Signal 2 stays the local worker and the Gyro-S v2 runtime
+is stopped. A real test only counts once the test itself has been verified.
+
+\end{minipage}
+\end{center}
+
+\clearpage
+
+%=====================================================
+% Table of contents and list of tables
+%=====================================================
+
+\sequals{\showpageheaders}{true}{
+	\pagestyle{fancy}
+	\fancyhead{}
+	\fancyhead[RO,LE]{\thepage}
+	\fancyhead[LO]{\slshape CONTENTS}
+	\fancyhead[RE]{\slshape CONTENTS}
+}{}
+\sequals{\showpagefooters}{true}{\fancyfoot[C]{}}{}
+\pdfbookmark[-1]{\contentsname}{toc}
+\tableofcontents
+\addtocontents{lot}{\protect\vspace{10pt}}
+\listoftables
+\clearpage
+
+\sequals{\showpageheaders}{true}{
+	\pagestyle{fancy}
+	\fancyhead{}
+	\fancyhead[LE,RO]{\thepage}
+	\fancyhead[RE]{\slshape \rightmark}
+	\fancyhead[LO]{\slshape \rightmark}
+}{}
+\sequals{\showpagefooters}{true}{\fancyfoot[C]{\pfooter}}{}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection.\ #1}{\thesection.\ #1}}
+\renewcommand{\subsectionmark}[1]{}
+\clearpage
+
+%=====================================================
+% Body
+%=====================================================
+
+\section{Introduction}\label{sec:intro}
+
+On 24 November the author of a fine-tune announced it with measured numbers: ``Gyro-S v2 is out. Qwen3.8-Flash-Next
+(125B MoE) on one 32 GB card, now closer to the original: 18\,\% less drift on held-out text, 27\,\% less on tool
+calls, 14\,\% less on code.'' Those are percentages on held-out data of the fine-tuning recipe. The question this
+report asks is what the same model does in the role report 5 defined \citep{Nott-2026aa}: a local coding worker under
+Claude Code \citep{Anthropic-2026aa} on the engine Strata \citep{Strata-2026aa}, writing files that hidden tests grade.
+Claimed percentages and bench passes measure different things; this report puts both of them on one table's worth of
+distance apart, and reports two faults of the measuring instrument found the same night --- because a real test only
+counts once the test itself has been verified.
+
+\section{Setting}\label{sec:setting}
+
+\subsection{Model under test}
+
+The model is Qwen3.8-Flash-Next-Gyro-S, quantised TQ1\_0, file 29{,}686{,}877{,}504 bytes, run without a PLE file
+(``noPLE'' GGUF) on Strata 0.2.21 Metal (our port branch), with MTP drafts on. A smoke test before the bench: correct
+output, 92 tokens/s decode, MTP acceptance 44 of 48. The machine is one Apple M5 Max with 128\,GB unified memory ---
+the same machine and the same bench as report 5 \citep{Nott-2026aa}: \emph{short} 20 questions with exact answers;
+\emph{easy} and \emph{hard} 40 function-level Python tasks each, read-and-write only, graded by hidden tests;
+\emph{real} five replayed fixes from the PAI repository (prune-dist-rerun, mirror-sync-token, worker-priority,
+session-move-selectors, escalate-loopstop) graded by hidden behaviour tests, 30-minute cap per task. prune-dist-rerun
+is confounded by the machine (its visible test is red before any edit; see report 5) and stays called out where it
+matters.
+
+\subsection{Keys and what they mean}
+
+Table~\ref{tab:keys} names every run of this report. The keys gyro-s2-v2 and gyro-s2-v2b are \emph{not} model results:
+they are an instrument fault, described in Section~\ref{sec:faults}, and are excluded from every table.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Keys of this report}\label{tab:keys}
+\begin{tabular}{P{3.4cm}P{2.6cm}P{7.6cm}}
+\toprule
+Key & Setup & Note \\
+\midrule
+gyro-s2-v2c & Gyro-S v2 alone & Runs of 24 November, default guard settings \\
+gyro-s2-v2-dual & Gyro-S v2 beside Signal 2 & Two servers in parallel; announced-no-action cap raised 2 $\to$ 6 for Gyro-S only (from the hard set on) \\
+signal-2-2026-11-23 & Signal 2 alone & Reference of report 5, rerun here \\
+signal-2-dual-0221 & Signal 2 beside Gyro-S & Same night as gyro-s2-v2-dual, Strata 0.2.21 \\
+gyro-s2-v2, gyro-s2-v2b & --- & Instrument fault (Section~\ref{sec:faults}); excluded \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Results}\label{sec:results}
+
+\subsection{Pass rates and times}
+
+Table~\ref{tab:sets} gives the four sets. Each cell is one run unless stated. The dual columns ran at the same time on
+the same machine, so each of them carries the other's load; Signal 2's solo numbers are its own reference runs.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Passed tasks, wall time and whole-run output speed (one run per cell unless stated)}\label{tab:sets}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrr}
+\toprule
+Run & short (20) & easy (40) & hard (40) & real (5) \\
+\midrule
+Gyro-S v2, alone & 8, 78\,s, 12.1\,tok/s & 37, 8.3\,min, 2.2\,tok/s & 8, 3.7\,min, 24.1\,tok/s & 3, 23.5\,min \\
+Gyro-S v2, dual & 15, 4.5\,min, 6.9\,tok/s & 35, 13.8\,min, 0.5\,tok/s & 32, 19.5\,min, 17.2\,tok/s & 2, 31.4\,min \\
+Signal 2, alone & 16, 52\,s, 40.0\,tok/s & 38$^{a}$, 5.5\,min, 32.5\,tok/s & 33$^{a}$, 9.0\,min, 26.3\,tok/s & 5, 67\,min \\
+Signal 2, dual & 17, 3.5\,min, 8.9\,tok/s & 39, 8.9\,min, 16.9\,tok/s & 30$^{b}$, 22.6\,min, 16.9\,tok/s & 4, 82\,min \\
+\bottomrule
+\end{tabular}}
+\par\smallskip{\footnotesize\raggedright $^{a}$ Signal 2's easy and hard runs here were loop-stopped after 38/40 and 33/40 correct writes (the guard fired on unchanged rewrites of finished files); the passes stand, the run did not finish cleanly. $^{b}$ Likewise loop-stopped after 30/40. Real cells: wall time of the whole run; Gyro-S real output 11{,}045 tokens alone, 11{,}882 in the dual run. Signal 2 alone ran a second real run: 3/5 in 55\,min (rep~2), so 8 of 10 over its two runs.\par}
+\end{table}
+
+Gyro-S v2 alone is weakest where answers must be complete: on the hard set 28 of 40 answers are missing entirely. Its
+easy-set pass rate (37/40) looks close to Signal 2's, but that set rewards writing something for every prompt; the
+hard set and the real tasks separate the two. In the dual run Gyro-S rises to 15/20 and 32/40 --- see
+Section~\ref{sec:workaround} for why that rise is not a clean effect of the model.
+
+\subsection{The five real tasks}\label{sec:real}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Real tasks, pass and seconds per task}\label{tab:real}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}
+\toprule
+Task & Gyro-S alone & Gyro-S dual & Signal 2 alone & Signal 2 dual \\
+\midrule
+prune-dist-rerun (confounded) & fail, 499\,s & fail, 186\,s & pass, 1{,}235\,s & fail, 2{,}177\,s \\
+mirror-sync-token & pass, 235\,s & pass, 345\,s & pass, 247\,s & pass, 710\,s \\
+worker-priority & fail, 93\,s & fail, 280\,s & pass, 1{,}434\,s & pass, 1{,}073\,s \\
+session-move-selectors & pass, 176\,s & fail, 110\,s & pass, 781\,s & pass, 649\,s \\
+escalate-loopstop & pass, 400\,s & pass, 951\,s & pass, 298\,s & pass, 279\,s \\
+\midrule
+Total & 3/5 & 2/5 & 5/5 (rep~1), 3/5 (rep~2) & 4/5 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Gyro-S v2's real failures are short: worker-priority fails after 93 and 280 seconds, session-move-selectors after 110
+seconds in the dual run --- the model stops before producing a fix. Signal 2 needs longer (its passes cost 6--24
+minutes on the two exploration-heavy tasks) but produces them.
+
+\section{Failure modes}\label{sec:failures}
+
+Three behavioural patterns appear in Gyro-S v2's transcripts, counted by the harness's loop guard:
+
+\begin{itemize}
+\item \textbf{Early stops.} Answers are never written (hard set: 28 of 40 missing) and real tasks end without a fix.
+A hard run of Gyro-S uses 13 turns and 3.8 thousand tokens; the same set for Signal 2 uses 46 turns and 14 thousand.
+\item \textbf{Announced-no-action.} The model announces a step (``I will now write the patch'') and ends the turn
+without doing it. The guard's pattern fired 7 times in the solo run.
+\item \textbf{Identical-write loops.} The same file content is rewritten unchanged; in the dual run this pattern fired
+14 times (announced-no-action 6 times). Signal 2 also loop-stopped on unchanged rewrites of finished files
+(its easy, hard and dual-hard runs above), so this is not a Gyro-S-only habit.
+\end{itemize}
+
+\subsection{The model-specific workaround, and why its effect is confounded}\label{sec:workaround}
+
+To keep Gyro-S from being stopped by the announced-no-action guard, that guard's cap was raised from 2 to 6 for
+Gyro-S only, starting from the hard set of the dual run. Hard went from 8/40 (solo, no cap change) to 32/40 (dual,
+cap raised). The two runs differ in three things at once: the cap, the presence of a second server on the same
+machine, and the guard settings --- so the jump cannot be attributed to the model being better. Short shows the same
+spread without any intervention: 8/20 solo against 15/20 dual, run-to-run noise of the same order as the ``effect''.
+One rep per cell is not a verdict (Section~\ref{sec:limits}).
+
+\section{Two instrument faults}\label{sec:faults}
+
+Both faults were found the same night, and each one, uncaught, would have produced a wrong conclusion.
+
+\subsection{A disabled provider logged as done}\label{sec:fault1}
+
+The provider \cmd{gyro-s2} was registered \emph{disabled}. Every worker start refused (exit code 2), but the bench
+logged ``done rc=0'' with 1-second walls and 0 passes. The keys gyro-s2-v2 and gyro-s2-v2b are this fault: four sets,
+all 0 passes, all walls of 1\,s --- physically impossible for real runs (the same tasks took minutes once the provider
+was enabled). \textbf{What it would have made us conclude:} Gyro-S v2 scores 0\,\% everywhere; a new model that fails
+every set is usually retired immediately. \textbf{How it was found:} at 23:22, when enabling the provider and rerunning
+produced plausible numbers in minutes, against ``done'' runs of one second. \textbf{How it was fixed:} the bench now
+resolves the provider before the series (preflight), and a refused start is recorded as an error, not as a completed
+run with zeros. The two faulty keys are excluded from every table in this report.
+
+\subsection{The shared bench config rewritten by a task}\label{sec:fault2}
+
+A real task under test ran \cmd{pai} commands that rewrote the bench's own shared private config, setting
+\cmd{workers.enabled:false}. The next two tasks of that series were refused in 1 second each. This fault hit the
+code-graph A/B experiment (Section~\ref{sec:codegraph}): its ``off'' arm would have read 3/5 instead of 5/5.
+\textbf{What it would have made us conclude:} turning code-graph off costs two real tasks --- a finding in the wrong
+direction. \textbf{How it was found:} the refused tasks showed a 1-second wall and no work, the same signature as
+fault~1; inspecting the config showed the task's own write. \textbf{How it was fixed:} the bench rewrites its config
+before every task (PAI 1.2.138), so a task cannot leave the harness disabled behind it. The two refused tasks were
+rerun and both passed.
+
+\section{Limits}\label{sec:limits}
+
+One rep per cell on every set; the run-to-run spread of the same model on the same set is large (short 8/20 against
+15/20, hard 8/40 against 32/40 with a confounder between them). Signal 2's own real set also spreads (5/5 against
+3/5 over two reps). Everything ran on one machine, and the dual runs share its memory and engine. The function sets
+cannot separate setups that differ by a few tasks of 40. Given all of this, no ranking of Gyro-S v2 and Signal 2
+follows from these numbers.
+
+\textbf{Verdict as an operational choice:} Signal 2 stays the local worker model; the Gyro-S v2 runtime is stopped
+(kept installed, in no routing chain). The claim's percentages (drift on held-out text) were not reproduced or
+refuted here --- they measure a different thing than this bench measures.
+
+\section{Side note: code-graph brief A/B}\label{sec:codegraph}
+
+A one-rep A/B of the code-graph brief on Signal 2, real set: \emph{ON} passed 5/5 in 2{,}548\,s, \emph{OFF} passed
+5/5 in 3{,}482\,s --- ON is 27\,\% faster summed over the five tasks, and faster on 3 of 5 individually. A second
+round was running when this report was written. Preliminary: one rep, and two of its tasks were initially refused by
+fault~2 before the fix and rerun.
+
+\clearpage
+\markboth{\MakeUppercase{\slshape References}}{}
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\printbibliography[title={References}]
+
+\end{document}
