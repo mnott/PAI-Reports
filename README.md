@@ -16,7 +16,7 @@ nothing is estimated.
 | 3 | 2026-10-17 | Quantisation, serving and harness repair: what it takes to run a local coder beside real work | lab report — numbers pending daylight build verification | [paper3.pdf](papers/2026-10-17-quant-and-ssd/paper3.pdf) · [DOI](https://doi.org/10.5281/zenodo.24274891) |
 | 4 | 2026-11-16 | Planner and worker: when a cloud planner over a local coder pays off | lab report | [paper4.pdf](papers/2026-11-16-planner-and-worker/paper4.pdf) · [DOI](https://doi.org/10.5281/zenodo.24274754) |
 | 5 | 2026-11-23 | Engines, quantisation and the harness: which local model and engine make the better worker (Inkling 2 Mini, Hy4-Flash, Signal 2)? | lab report | [paper5.pdf](papers/2026-11-23-engines-and-harness/paper5.pdf) · [DOI](https://doi.org/10.5281/zenodo.24465707) |
-| 6 | 2026-11-25 | Claimed and measured: Gyro-S v2 on real coding tasks, and why the test needs testing too | lab report | [paper6.pdf](papers/2026-11-25-claims-vs-real-tasks/paper6.pdf) · DOI pending |
+| 6 | 2026-11-25 | Claimed and measured: Gyro-S v2 on real coding tasks, and why the test needs testing too | lab report | [paper6.pdf](papers/2026-11-25-claims-vs-real-tasks/paper6.pdf) · [DOI](https://doi.org/10.5281/zenodo.24525503) |
 
 Each directory holds the LaTeX source, the compiled PDF and the shared bibliography.
 
