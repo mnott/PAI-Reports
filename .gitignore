@@ -1,0 +1,13 @@
+# LaTeX build leftovers
+*.aux
+*.log
+*.bcf
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.out
+*.toc
+*.lot
+*.run.xml
+*.mw

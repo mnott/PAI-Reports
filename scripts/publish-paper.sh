@@ -46,6 +46,16 @@ if [ "$pdf_count" -ne 1 ]; then
   exit 1
 fi
 
+# Figures check — a lab report publishes graphics with its tables. Runs before anything
+# touches the network, --dry-run included.
+TEX_COUNT="$(find "$DIR" -maxdepth 1 -name "*.tex" | wc -l | tr -d '[:space:]')"
+[ "$TEX_COUNT" -gt 0 ] || { echo "error: no *.tex found in $DIR" >&2; exit 1; }
+if ! grep -q '\\includegraphics' "$DIR"/*.tex; then
+  echo "error: $(basename "$DIR") has no \\includegraphics in its .tex — lab reports carry figures with their tables" >&2
+  echo "refusing to publish — build the figures (figures/make_figures.py) and reference them in the text" >&2
+  exit 1
+fi
+
 # Bibliography check — runs before anything touches the network, --dry-run included.
 BIB="$DIR/Bibliography.bib"
 if [ -f "$BIB" ]; then

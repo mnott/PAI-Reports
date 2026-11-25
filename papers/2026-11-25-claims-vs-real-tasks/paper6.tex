@@ -234,7 +234,11 @@ easy-set pass rate (37/40) looks close to Signal 2's, but that set rewards writi
 hard set and the real tasks separate the two. In the dual run Gyro-S rises to 15/20 and 32/40 --- see
 Section~\ref{sec:workaround} for why that rise is not a clean effect of the model.
 
-\subsection{The five real tasks}\label{sec:real}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/fig-pass-rate.pdf}
+\caption{Pass rate per set for the four runs of Table~\ref{tab:sets}. Orange is Gyro-S v2, blue shades Signal 2; lighter shades are the dual runs (two servers on one machine). Labels give passed tasks of $n$.}\label{fig:pass}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -255,7 +259,13 @@ Total & 3/5 & 2/5 & 5/5 (rep~1), 3/5 (rep~2) & 4/5 \\
 \end{tabular}}
 \end{table}
 
-Gyro-S v2's real failures are short: worker-priority fails after 93 and 280 seconds, session-move-selectors after 110
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/fig-real-tasks.pdf}
+\caption{The five real tasks of Table~\ref{tab:real}: filled bars passed, hollow bars failed the hidden tests; bar height is wall time. Orange is Gyro-S v2, blue shades Signal 2.}\label{fig:real}
+\end{figure}
+
+Gyro-S v2's real failures are short (Figure~\ref{fig:real}): worker-priority fails after 93 and 280 seconds, session-move-selectors after 110
 seconds in the dual run --- the model stops before producing a fix. Signal 2 needs longer (its passes cost 6--24
 minutes on the two exploration-heavy tasks) but produces them.
 
@@ -273,6 +283,14 @@ without doing it. The guard's pattern fired 7 times in the solo run.
 (its easy, hard and dual-hard runs above), so this is not a Gyro-S-only habit.
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/fig-effort-guards.pdf}
+\caption{Left: work done in one hard run --- Gyro-S v2 stops after 13 turns and 3.8 thousand output tokens, Signal 2 after 46 turns and 14 thousand. Right: loop-guard firings of Gyro-S v2 (announced-no-action 7 solo and 6 dual, identical-write 14 dual).}\label{fig:effort}
+\end{figure}
+
+Figure~\ref{fig:effort} shows the effort at stop beside the guard counts. The early-stop pattern is visible directly: a hard run of Gyro-S does a third of Signal 2's work and then stops with answers missing.
+
 \subsection{The model-specific workaround, and why its effect is confounded}\label{sec:workaround}
 
 To keep Gyro-S from being stopped by the announced-no-action guard, that guard's cap was raised from 2 to 6 for
@@ -284,7 +302,14 @@ One rep per cell is not a verdict (Section~\ref{sec:limits}).
 
 \section{Two instrument faults}\label{sec:faults}
 
-Both faults were found the same night, and each one, uncaught, would have produced a wrong conclusion.
+Both faults were found the same night, and each one, uncaught, would have produced a wrong conclusion
+(Figure~\ref{fig:faults}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig-instrument-faults.pdf}
+\caption{The two instrument faults: orange is what the faulty run reported (Gyro-S v2 ``0 \% everywhere''; code-graph OFF ``3/5''), blue is the corrected result after the fix and rerun (measured 8/20, 37/40, 8/40, 3/5; and 5/5).}\label{fig:faults}
+\end{figure}
 
 \subsection{A disabled provider logged as done}\label{sec:fault1}
 
