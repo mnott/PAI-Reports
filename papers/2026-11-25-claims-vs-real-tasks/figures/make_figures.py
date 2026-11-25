@@ -35,11 +35,11 @@ for j, (name, c, passed) in enumerate(RUNS):
     xs = [i + (j - 2) * w for i in range(4)]
     vals = [100 * p / n for p, n in zip(passed, NS)]
     ax.bar(xs, vals, width=w, color=c, label=name)
-    for x, v, p, n in zip(xs, vals, passed, NS):
-        ax.text(x, v + 2.5, f"{p}/{n}", ha="center", va="bottom", fontsize=6.5, color=INK)
+    for x, v, p in zip(xs, vals, passed):
+        ax.text(x, v + 2.5, str(p), ha="center", va="bottom", fontsize=7, color=INK, rotation=90)
 ax.set_xticks(range(4))
 ax.set_xticklabels(SETS)
-ax.set_ylim(0, 115)
+ax.set_ylim(0, 125)
 ax.set_yticks([0, 25, 50, 75, 100])
 ax.set_ylabel("share of tasks passed (%)")
 legend = ax.legend(frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.32), ncol=5)
@@ -72,9 +72,10 @@ ax.set_xticks(range(5))
 ax.set_xticklabels(TASKS)
 ax.set_ylim(0, 42)
 ax.set_ylabel("minutes for the task (less is better)")
-legend = ax.legend(handles=[Patch(color=BLUE, label="pass: filled bar"),
-                            Patch(facecolor=BG, edgecolor=BLUE, linewidth=1.4, label="fail: hollow bar")],
-                   frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.28), ncol=2)
+legend = ax.legend(handles=[Patch(color=c, label=name) for name, c, _ in REAL] +
+                   [Patch(facecolor=BG, edgecolor=INK, linewidth=1.4, label="fail: hollow bar"),
+                    Patch(color=INK, label="pass: filled bar")],
+                   frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.28), ncol=3)
 for handle in legend.get_patches():
     handle.set_height(0.6)
 clean(ax, "y")
