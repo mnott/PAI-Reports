@@ -178,8 +178,10 @@ counts once the test itself has been verified.
 \subsection{Model under test}
 
 The model is Qwen3.8-Flash-Next-Gyro-S v2, quantised TQ1\_0, file 29{,}686{,}877{,}504 bytes --- the \emph{-noPLE}
-GGUF (SHA-256 \texttt{e33a245502a4ae0083ac2064b019f948f5a2cfec6152b1dd6854dd014aee66bb}, matching the model author's
-changelog), with an external n-gram (PLE) table loaded via \cmd{--ple-gguf}: the base model's table at Q8\_0
+GGUF.\footnote{SHA-256 \texttt{e33a245502a4ae00\allowbreak 83ac2064b019f948\allowbreak f5a2cfec6152b1dd\allowbreak 6854dd014aee66bb}, matching the model author's changelog.}
+PLE (per-layer embedding) is a large lookup table that layer 1 of the model reads for every token, indexed by the
+current and previous tokens (an n-gram table). It makes up about half of a full model file and stays on disk; the
+\emph{-noPLE} files ship without it and load it from a separate file. Here the table is loaded via \cmd{--ple-gguf}: the base model's table at Q8\_0
 (320{,}001{,}536 rows), not the IQ4\_NL Gyro-S table the model card pairs with this file. The runtime pack was built
 fresh from the v2 file; no earlier pack was reused. This ran on Strata 0.2.21 Metal (our port branch), with MTP drafts
 on. A smoke test before the bench: correct
