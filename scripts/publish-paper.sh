@@ -143,9 +143,12 @@ if [ "$NEW_VERSION" -eq 1 ]; then
     echo "dry run — nothing uploaded:"
     echo "title: $title"
     echo "pdf:   $PDF ($size bytes)"
-    echo "would: POST $API/$rec_id/actions/newversion, take links.latest_draft,"
-    echo "       DELETE the draft's carried-over files, PUT $fname into the draft bucket,"
-    echo "       PUT metadata (publication_date $(date -u +%Y-%m-%d)${TEX_VERSION:+, version $TEX_VERSION}), POST actions/publish,"
+    echo "would: POST $API/$rec_id/actions/newversion -> links.latest_draft"
+    echo "       GET <latest_draft> -> links.bucket, files[]"
+    echo "       DELETE <latest_draft>/files/<file_id> for each carried-over file"
+    echo "       PUT <bucket>/$fname"
+    echo "       PUT <latest_draft> {\"metadata\": ...} (publication_date $(date -u +%Y-%m-%d)${TEX_VERSION:+, version $TEX_VERSION})"
+    echo "       POST <latest_draft>/actions/publish -> doi"
     echo "       write $old_doi to $DOI_FILE.history and the new DOI to $DOI_FILE"
     exit 0
   fi
@@ -163,22 +166,23 @@ if [ "$NEW_VERSION" -eq 1 ]; then
   draft_url="$(printf '%s' "$body" | jq -r '.links.latest_draft')"
   [ -n "$draft_url" ] && [ "$draft_url" != null ] || fail "$status" "$body" "parse latest_draft link"
 
-  # 2. drop the files carried over from the published version — the draft starts clean
-  resp="$(curl -sS -w '\n%{http_code}' "$draft_url/files" -H "$AUTH")"
+  # 2. read the draft deposition: its bucket link and the files carried over
+  resp="$(curl -sS -w '\n%{http_code}' "$draft_url" -H "$AUTH")"
   status="${resp##*$'\n'}"
   body="${resp%$'\n'*}"
-  case "$status" in 2*) ;; *) fail "$status" "$body" "GET $draft_url/files" ;; esac
+  case "$status" in 2*) ;; *) fail "$status" "$body" "GET $draft_url" ;; esac
 
   draft_bucket="$(printf '%s' "$body" | jq -r '.links.bucket')"
   [ -n "$draft_bucket" ] && [ "$draft_bucket" != null ] || fail "$status" "$body" "parse draft bucket link"
 
+  # drop the carried-over files — the draft starts clean
   while read -r file_id; do
     [ -n "$file_id" ] || continue
-    resp="$(curl -sS -w '\n%{http_code}' -X DELETE "$draft_bucket/$file_id" -H "$AUTH")"
+    resp="$(curl -sS -w '\n%{http_code}' -X DELETE "$draft_url/files/$file_id" -H "$AUTH")"
     status="${resp##*$'\n'}"
-    body="${resp%$'\n'*}"
-    case "$status" in 2*) ;; *) fail "$status" "$body" "DELETE $draft_bucket/$file_id" ;; esac
-  done < <(printf '%s' "$body" | jq -r '(.files // .) | .[]?.id // empty')
+    body_del="${resp%$'\n'*}"
+    case "$status" in 2*) ;; *) fail "$status" "$body_del" "DELETE $draft_url/files/$file_id" ;; esac
+  done < <(printf '%s' "$body" | jq -r '.files[]?.id // empty')
 
   # 3. upload the corrected PDF into the draft bucket
   resp="$(curl -sS -w '\n%{http_code}' -X PUT "$draft_bucket/$fname" \
@@ -187,12 +191,12 @@ if [ "$NEW_VERSION" -eq 1 ]; then
   body="${resp%$'\n'*}"
   case "$status" in 2*) ;; *) fail "$status" "$body" "PUT $draft_bucket/$fname" ;; esac
 
-  # 4. set the draft's metadata (version + today's publication date)
-  resp="$(curl -sS -w '\n%{http_code}' -X PUT "$draft_url/metadata" \
+  # 4. set the draft's metadata (version + today's publication date): PUT on the deposition
+  resp="$(curl -sS -w '\n%{http_code}' -X PUT "$draft_url" \
     -H "$AUTH" -H 'Content-Type: application/json' --data "$draft_meta")"
   status="${resp##*$'\n'}"
   body="${resp%$'\n'*}"
-  case "$status" in 2*) ;; *) fail "$status" "$body" "PUT $draft_url/metadata" ;; esac
+  case "$status" in 2*) ;; *) fail "$status" "$body" "PUT $draft_url" ;; esac
 
   # 5. publish the new version — same record, new DOI suffix
   resp="$(curl -sS -w '\n%{http_code}' -X POST "$draft_url/actions/publish" \
