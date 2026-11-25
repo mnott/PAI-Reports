@@ -29,26 +29,26 @@ RUNS = [("Gyro-S v2, alone", ORANGE, [8, 37, 8, 3]),
         ("Gyro-S v2, dual", "#9ecbf5", [15, 35, 32, 2]),
         ("Signal 2, alone", BLUE, [16, 38, 33, 5]),
         ("Signal 2, dual", "#1b4f8f", [17, 39, 30, 4])]
-fig, ax = plt.subplots(figsize=(7.4, 3.4))
+fig, ax = plt.subplots(figsize=(7.4, 3.9))
 w = 0.15
 for j, (name, c, passed) in enumerate(RUNS):
     xs = [i + (j - 2) * w for i in range(4)]
     vals = [100 * p / n for p, n in zip(passed, NS)]
     ax.bar(xs, vals, width=w, color=c, label=name)
     for x, v, p, n in zip(xs, vals, passed, NS):
-        ax.text(x, v + 2.5, f"{p}/{n}", ha="center", fontsize=7, color=INK)
+        ax.text(x, v + 2.5, f"{p}/{n}", ha="center", va="bottom", fontsize=6.5, color=INK)
 ax.set_xticks(range(4))
 ax.set_xticklabels(SETS)
-ax.set_ylim(0, 112)
+ax.set_ylim(0, 115)
 ax.set_yticks([0, 25, 50, 75, 100])
 ax.set_ylabel("share of tasks passed (%)")
-ax.legend(frameon=False, fontsize=7.5, loc="upper left", bbox_to_anchor=(-0.02, 1.02), ncol=3)
+legend = ax.legend(frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.32), ncol=5)
+for handle in legend.get_patches():
+    handle.set_height(0.6)
 clean(ax, "y")
 ax.set_title("Pass rate per set: Gyro-S v2 and Signal 2, alone and in parallel",
              loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.text(0.01, 0.01, "One run per bar. Orange shades are Gyro-S v2 (light orange = rerun with the model author's IQ4_NL PLE table); blue shades are Signal 2. Lighter blue = dual run (two servers on one machine).",
-         color=INK2, fontsize=7)
-fig.tight_layout(rect=(0, 0.05, 1, 1))
+fig.tight_layout(rect=(0, 0.18, 1, 1))
 fig.savefig("fig-pass-rate.pdf")
 plt.close(fig)
 
@@ -60,27 +60,27 @@ REAL = [("Gyro-S v2, alone", ORANGE, [(0, 499), (1, 235), (0, 93), (1, 176), (1,
         ("Gyro-S v2, dual", "#9ecbf5", [(0, 186), (1, 345), (0, 280), (0, 110), (1, 951)]),
         ("Signal 2, alone", BLUE, [(1, 1235), (1, 247), (1, 1434), (1, 781), (1, 298)]),
         ("Signal 2, dual", "#1b4f8f", [(0, 2177), (1, 710), (1, 1073), (1, 649), (1, 279)])]
-fig, ax = plt.subplots(figsize=(7.4, 3.8))
+fig, ax = plt.subplots(figsize=(7.4, 4.3))
 w = 0.15
 for j, (name, c, rows) in enumerate(REAL):
     xs = [i + (j - 2) * w for i in range(5)]
     for x, (ok, s) in zip(xs, rows):
         ax.bar(x, s / 60, width=w, color=c if ok else BG, edgecolor=c, linewidth=1.4)
-        ax.text(x, s / 60 + 2.5, "P" if ok else "F", ha="center", fontsize=7,
+        ax.text(x, s / 60 + 2.5, "P" if ok else "F", ha="center", va="bottom", fontsize=7,
                 color=INK if ok else c, fontweight="bold")
 ax.set_xticks(range(5))
 ax.set_xticklabels(TASKS)
 ax.set_ylim(0, 42)
 ax.set_ylabel("minutes for the task (less is better)")
-ax.legend(handles=[Patch(color=BLUE, label="pass: filled bar"),
-                   Patch(facecolor=BG, edgecolor=BLUE, linewidth=1.4, label="fail: hollow bar")],
-          frameon=False, fontsize=7.5, loc="upper right", bbox_to_anchor=(1.02, 1.02), ncol=2)
+legend = ax.legend(handles=[Patch(color=BLUE, label="pass: filled bar"),
+                            Patch(facecolor=BG, edgecolor=BLUE, linewidth=1.4, label="fail: hollow bar")],
+                   frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.28), ncol=2)
+for handle in legend.get_patches():
+    handle.set_height(0.6)
 clean(ax, "y")
 ax.set_title("Real tasks per run: pass (P, filled) or fail (F, hollow), bar height is wall time",
              loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.text(0.01, 0.01, "Letters above each bar: P passed, F failed hidden tests. Orange shades are Gyro-S v2 (light orange = rerun with the author's IQ4_NL PLE table), blue shades Signal 2.",
-         color=INK2, fontsize=7)
-fig.tight_layout(rect=(0, 0.05, 1, 1))
+fig.tight_layout(rect=(0, 0.14, 1, 1))
 fig.savefig("fig-real-tasks.pdf")
 plt.close(fig)
 

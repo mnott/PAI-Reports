@@ -115,7 +115,7 @@ of the same night would have produced wrong verdicts: a provider registered disa
 1-second walls and 0 passes (Gyro-S would have scored 0\,\%), and a real task rewrote the bench's shared config so
 the next two tasks were refused in 1 second (a code-graph ``off'' arm would have read 3/5). Both were found and
 fixed: the bench now resolves the provider before the series, records refused starts as errors, and rewrites its own
-config before every task. After the model author pointed out that we had loaded the wrong PLE table, we reran with
+config before every task. After the model author asked whether the external PLE table had been used, we found that we had loaded the base model's table instead of the Gyro-S table the model card pairs with this file, and we reran with
 the table their card pairs with this file: hard goes from 8/40 to 30/40 at the same guard cap --- the earlier gap was
 our setup (the wrong table pairing), not the model. With the paired table Gyro-S v2 performs at Signal 2's level on
 this bench (hard 33/40 against Signal 2's 33/40; real 4/5, with the only failure on the confounded task). One rep per
