@@ -11,3 +11,4 @@
 *.lot
 *.run.xml
 *.mw
+.DS_Store
