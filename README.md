@@ -26,6 +26,7 @@ Each paper is published as its own Zenodo record with the PDF as the record's fi
 (so Zenodo shows the PDF preview and download); the series DOI stays the concept DOI.
 1. Add `papers/<dir>/zenodo.json` — copy an existing one, change title, date, description, keywords.
 2. Build the figures: `figures/make_figures.py` in the paper's directory (same style as report 5) and reference each figure next to its table with `\includegraphics`. Lab reports carry graphics along with their tables; `publish-paper.sh` refuses a `.tex` without them.
+   The LaTeX layout (`templates/`, `tex/titlepage.tex`) is not tracked here. It lives in the PAI notes at `Notes/LocalModels/` (`templates/cfg/zz_layout.tex`, `zz_config_bib.tex`, `zz_macros.tex`, and `tex/`). Build in a scratch directory that symlinks both next to a copy of the paper: `B=$(mktemp -d); cp -R papers/<dir>/* $B/; ln -s <PAI>/Notes/LocalModels/templates $B/templates; ln -s <PAI>/Notes/LocalModels/tex $B/tex; (cd $B && latexmk -pdf paper6.tex)`, then copy the resulting PDF back and commit only the PDF.
 3. Build the paper, then trim its bibliography with `scripts/trim-bib.py <your library.bib> papers/<dir>` before committing.
 4. Run `ZENODO_TOKEN=... scripts/publish-paper.sh papers/<dir>` (or `ZENODO_TOKEN_FILE=...`).
 5. The script writes the DOI to `papers/<dir>/zenodo.doi`; add it to the table above.
