@@ -30,6 +30,7 @@ Each paper is published as its own Zenodo record with the PDF as the record's fi
 3. Build the paper, then trim its bibliography with `scripts/trim-bib.py <your library.bib> papers/<dir>` before committing.
 4. Run `ZENODO_TOKEN=... scripts/publish-paper.sh papers/<dir>` (or `ZENODO_TOKEN_FILE=...`).
 5. The script writes the DOI to `papers/<dir>/zenodo.doi`; add it to the table above.
+6. For a corrected paper, publish a new version of the same record: `ZENODO_TOKEN=... scripts/publish-paper.sh --new-version papers/<dir>` (add `--dry-run` to see the planned calls). The script opens a draft on the existing record id from `zenodo.doi`, replaces its files with the current PDF, sets `metadata.version` from `\def\tversion` and today's `publication_date`, publishes, writes the new DOI to `zenodo.doi` and keeps the old one in `zenodo.doi.history`.
 
 ## Findings in one line each
 
