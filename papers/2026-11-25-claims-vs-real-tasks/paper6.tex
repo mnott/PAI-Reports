@@ -165,8 +165,8 @@ On 24 November the author of a fine-tune announced it with measured numbers: ``G
 calls, 14\,\% less on code.'' Those are percentages on held-out data of the fine-tuning recipe. The question this
 report asks is what the same model does in the role report 5 defined \citep{Nott-2026aa}: a local coding worker under
 Claude Code \citep{Anthropic-2026aa} on the engine Strata \citep{Strata-2026aa}, writing files that hidden tests grade.
-Claimed percentages and bench passes measure different things; this report puts both of them on one table's worth of
-distance apart, and reports two faults of the measuring instrument found the same night --- because a real test only
+Claimed percentages and bench passes measure different things; this report sets the claim beside what the bench measures,
+and reports two faults of the measuring instrument found the same night --- because a real test only
 counts once the test itself has been verified.
 
 \section{Setting}\label{sec:setting}
@@ -198,7 +198,7 @@ Key & Setup & Note \\
 \midrule
 gyro-s2-v2c & Gyro-S v2 alone & Runs of 24 November, default guard settings \\
 gyro-s2-v2-dual & Gyro-S v2 beside Signal 2 & Two servers in parallel; announced-no-action cap raised 2 $\to$ 6 for Gyro-S only (from the hard set on) \\
-signal-2-2026-11-23 & Signal 2 alone & Reference of report 5, rerun here \\
+signal-2-2026-11-23 & Signal 2 alone & Reference run of report 5 (23 November) \\
 signal-2-dual-0221 & Signal 2 beside Gyro-S & Same night as gyro-s2-v2-dual, Strata 0.2.21 \\
 gyro-s2-v2, gyro-s2-v2b & --- & Instrument fault (Section~\ref{sec:faults}); excluded \\
 \bottomrule
@@ -277,8 +277,8 @@ without doing it. The guard's pattern fired 7 times in the solo run.
 
 To keep Gyro-S from being stopped by the announced-no-action guard, that guard's cap was raised from 2 to 6 for
 Gyro-S only, starting from the hard set of the dual run. Hard went from 8/40 (solo, no cap change) to 32/40 (dual,
-cap raised). The two runs differ in three things at once: the cap, the presence of a second server on the same
-machine, and the guard settings --- so the jump cannot be attributed to the model being better. Short shows the same
+cap raised). The two runs differ in more than the model: the raised cap, a second model server on the same
+machine, and ordinary run-to-run spread --- so the jump cannot be attributed to the model being better. Short shows the same
 spread without any intervention: 8/20 solo against 15/20 dual, run-to-run noise of the same order as the ``effect''.
 One rep per cell is not a verdict (Section~\ref{sec:limits}).
 
