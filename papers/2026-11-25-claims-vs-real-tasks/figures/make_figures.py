@@ -19,6 +19,8 @@ def clean(ax, grid="x"):
     ax.set_axisbelow(True)
 
 
+
+
 # ---- 1 pass rate per set (grouped bars), from tab:sets ----
 SETS = ["short\n(20)", "easy\n(40)", "hard\n(40)", "real\n(5)"]
 NS = [20, 40, 40, 5]
@@ -39,7 +41,7 @@ ax.set_xticklabels(SETS)
 ax.set_ylim(0, 112)
 ax.set_yticks([0, 25, 50, 75, 100])
 ax.set_ylabel("share of tasks passed (%)")
-ax.legend(frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=4)
+ax.legend(frameon=False, fontsize=7.5, loc="upper left", bbox_to_anchor=(-0.02, 1.02), ncol=2)
 clean(ax, "y")
 ax.set_title("Pass rate per set: Gyro-S v2 and Signal 2, alone and in parallel",
              loc="left", color=INK, fontsize=9.5, fontweight="bold")
@@ -50,8 +52,8 @@ fig.savefig("fig-pass-rate.pdf")
 plt.close(fig)
 
 # ---- 2 real tasks: pass/fail and seconds per task, four runs ----
-TASKS = ["prune-dist-rerun\n(confounded)", "mirror-sync-token", "worker-priority",
-         "session-move-selectors", "escalate-loopstop"]
+TASKS = ["prune-dist-\nrerun\n(confounded)", "mirror-sync-\ntoken", "worker-\npriority",
+         "session-move-\nselectors", "escalate-\nloopstop"]
 REAL = [("Gyro-S v2, alone", ORANGE, [(0, 499), (1, 235), (0, 93), (1, 176), (1, 400)]),
         ("Gyro-S v2, dual", "#9ecbf5", [(0, 186), (1, 345), (0, 280), (0, 110), (1, 951)]),
         ("Signal 2, alone", BLUE, [(1, 1235), (1, 247), (1, 1434), (1, 781), (1, 298)]),
@@ -70,7 +72,7 @@ ax.set_ylim(0, 42)
 ax.set_ylabel("minutes for the task (less is better)")
 ax.legend(handles=[Patch(color=BLUE, label="pass: filled bar"),
                    Patch(facecolor=BG, edgecolor=BLUE, linewidth=1.4, label="fail: hollow bar")],
-          frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2)
+          frameon=False, fontsize=7.5, loc="upper left", bbox_to_anchor=(-0.02, 1.02), ncol=2)
 clean(ax, "y")
 ax.set_title("Real tasks per run: pass (P, filled) or fail (F, hollow), bar height is wall time",
              loc="left", color=INK, fontsize=9.5, fontweight="bold")
@@ -80,26 +82,23 @@ fig.tight_layout(rect=(0, 0.05, 1, 1))
 fig.savefig("fig-real-tasks.pdf")
 plt.close(fig)
 
-# ---- 3 effort at stop: turns and tokens of a hard run, plus guard firings ----
-fig, axes = plt.subplots(1, 2, figsize=(7.4, 2.9), gridspec_kw={"width_ratios": [1.35, 1]})
-ax = axes[0]
-items = [("turns", 13, 46, "turns"), ("output tokens (thousand)", 3.8, 14.0, "k tok")]
-for i, (label, g, s, unit) in enumerate(items):
-    ax.barh(i + 0.18, g, height=0.34, color=ORANGE)
-    ax.barh(i - 0.18, s, height=0.34, color=BLUE)
-    ax.text(g + 1, i + 0.18, f"{g} {unit}", va="center", fontsize=7.5, color=INK)
-    ax.text(s + 1, i - 0.18, f"{s} {unit}", va="center", fontsize=7.5, color=INK)
-ax.set_yticks([0, 1])
-ax.set_yticklabels(["output tokens", "turns"])
-ax.set_xlim(0, 62)
-ax.legend(handles=[Patch(color=ORANGE, label="Gyro-S v2 (early stops)"), Patch(color=BLUE, label="Signal 2")],
-          frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2)
-ax.tick_params(axis="y", length=0)
-ax.spines["left"].set_visible(False)
-clean(ax)
-ax.set_title("One hard run: how much work each model did", loc="left", color=INK, fontsize=9, fontweight="bold")
+# ---- 3 effort at stop: turns and tokens of a hard run (own axes), plus guard firings ----
+fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.9), gridspec_kw={"width_ratios": [0.85, 0.85, 1.1]})
+effort = [("turns", 13, 46, "turns"), ("output tokens", 3.8, 14.0, "k tok")]
+for ax, (label, g, s, unit) in zip(axes[:2], effort):
+    ax.barh(1, g, height=0.5, color=ORANGE)
+    ax.barh(0, s, height=0.5, color=BLUE)
+    ax.text(g + 0.6, 1, f"{g}", va="center", fontsize=8, color=INK)
+    ax.text(s + 0.6, 0, f"{s}", va="center", fontsize=8, color=INK)
+    ax.set_yticks([0, 1])
+    ax.set_yticklabels(["Signal 2", "Gyro-S v2"])
+    ax.set_xlim(0, max(g, s) * 1.35)
+    ax.tick_params(axis="y", length=0)
+    ax.spines["left"].set_visible(False)
+    clean(ax)
+    ax.set_title(f"{label} ({unit})", loc="left", color=INK, fontsize=9, fontweight="bold")
 
-ax = axes[1]
+ax = axes[2]
 guards = [("announced-no-action, solo", 7, ORANGE), ("announced-no-action, dual", 6, "#9ecbf5"),
           ("identical-write, dual", 14, ORANGE)]
 for i, (label, v, c) in enumerate(guards[::-1]):
@@ -113,35 +112,34 @@ ax.tick_params(axis="y", length=0)
 ax.spines["left"].set_visible(False)
 clean(ax)
 ax.set_title("Loop-guard firings of Gyro-S v2", loc="left", color=INK, fontsize=9, fontweight="bold")
-fig.text(0.01, 0.01, "Announced-no-action: the model announces a step and ends the turn without doing it; identical-write: the same file content rewritten unchanged.",
+fig.text(0.01, 0.01, "Announced-no-action: the model announces a step and ends the turn without doing it;\nidentical-write: the same file content rewritten unchanged.",
          color=INK2, fontsize=7.5)
-fig.tight_layout(rect=(0, 0.045, 1, 1))
+fig.tight_layout(rect=(0, 0.09, 1, 1))
 fig.savefig("fig-effort-guards.pdf")
 plt.close(fig)
 
-# ---- 4 instrument faults: what the faulty run reported vs the corrected result ----
+# ---- 4 instrument faults: real tasks passed out of 5, faulty run vs corrected ----
 fig, ax = plt.subplots(figsize=(7.0, 2.9))
-faults = [("Gyro-S v2, all four sets\n(disabled provider logged as done)", 0, "0 % everywhere",
-           [8, 37, 8, 3], "measured: 8/20, 37/40, 8/40, 3/5"),
-          ("code-graph OFF arm\n(task rewrote the bench config)", 3, "3/5",
-           [5], "rerun: 5/5")]
+faults = [("Gyro-S v2 alone\n(disabled provider logged as done)", 0, "0/5", 3, "3/5"),
+          ("code-graph OFF arm\n(task rewrote the bench config)", 3, "3/5", 5, "5/5")]
 for i, (label, reported, rep_txt, corrected, corr_txt) in enumerate(faults[::-1]):
     ax.barh(i + 0.2, reported, height=0.34, color=ORANGE)
-    ax.text(reported + 0.3, i + 0.2, rep_txt, va="center", fontsize=7.5, color=INK)
-    ax.barh(i - 0.2, corrected[0], height=0.34, color=BLUE)
-    ax.text(corrected[0] + 0.3, i - 0.2, corr_txt, va="center", fontsize=7.5, color=INK)
+    ax.text(reported + 0.15, i + 0.2, rep_txt, va="center", fontsize=7.5, color=INK)
+    ax.barh(i - 0.2, corrected, height=0.34, color=BLUE)
+    ax.text(corrected + 0.15, i - 0.2, corr_txt, va="center", fontsize=7.5, color=INK)
 ax.set_yticks([0, 1])
-ax.set_yticklabels(["code-graph OFF\n(after rerun)", "Gyro-S v2\n(after fix)"])
-ax.set_xlim(0, 12)
-ax.set_xlabel("reported pass rate (faulty) vs corrected")
+ax.set_yticklabels(["code-graph OFF\n(after rerun)", "Gyro-S v2 alone\n(after fix)"])
+ax.set_xlim(0, 6)
+ax.set_xticks(range(6))
+ax.set_xlabel("real tasks passed out of 5")
 ax.legend(handles=[Patch(color=ORANGE, label="what the faulty run reported"),
                    Patch(color=BLUE, label="the corrected result")],
-          frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2)
+          frameon=False, fontsize=7.5, loc="upper left", bbox_to_anchor=(-0.02, 1.02), ncol=2)
 ax.tick_params(axis="y", length=0)
 ax.spines["left"].set_visible(False)
 clean(ax)
 ax.set_title("Two instrument faults: the verdict they would have produced", loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.text(0.01, 0.01, "Faulty runs refused every start in 1 s and logged them as done with 0 passes; both were found and fixed (Sections 6.1 and 6.2).",
+fig.text(0.01, 0.01, "Faulty runs refused every start in 1 s and logged them as done with 0 passes; both were found and fixed.",
          color=INK2, fontsize=7.5)
 fig.tight_layout(rect=(0, 0.045, 1, 1))
 fig.savefig("fig-instrument-faults.pdf")
