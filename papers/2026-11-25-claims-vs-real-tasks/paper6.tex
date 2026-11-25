@@ -17,7 +17,7 @@
 
 \def\torganization{Independent Research}
 \def\tsubmissiondate{25 November 2026}
-\def\tversion{0.1 (draft)}
+\def\tversion{0.2}
 \def\tauthor{Matthias Nott}
 \def\tcontact{~}
 \def\tcontactid{~}
@@ -31,7 +31,7 @@
 \def\tfooterrightlabelup{Date}
 \def\tfooterrightlabeldown{Version}
 \def\tfooterrightup{November 2026}
-\def\tfooterrightdown{0.1}
+\def\tfooterrightdown{0.2}
 
 \def\showtitlepage{true}
 \def\showlistofs{true}
@@ -173,8 +173,12 @@ counts once the test itself has been verified.
 
 \subsection{Model under test}
 
-The model is Qwen3.8-Flash-Next-Gyro-S, quantised TQ1\_0, file 29{,}686{,}877{,}504 bytes, run without a PLE file
-(``noPLE'' GGUF) on Strata 0.2.21 Metal (our port branch), with MTP drafts on. A smoke test before the bench: correct
+The model is Qwen3.8-Flash-Next-Gyro-S v2, quantised TQ1\_0, file 29{,}686{,}877{,}504 bytes --- the \emph{-noPLE}
+GGUF (SHA-256 \texttt{e33a245502a4ae0083ac2064b019f948f5a2cfec6152b1dd6854dd014aee66bb}, matching the model author's
+changelog), with an external n-gram (PLE) table loaded via \cmd{--ple-gguf}: the base model's table at Q8\_0
+(320{,}001{,}536 rows), not the IQ4\_NL Gyro-S table the model card pairs with this file. The runtime pack was built
+fresh from the v2 file; no earlier pack was reused. This ran on Strata 0.2.21 Metal (our port branch), with MTP drafts
+on. A smoke test before the bench: correct
 output, 92 tokens/s decode, MTP acceptance 44 of 48. The machine is one Apple M5 Max with 128\,GB unified memory ---
 the same machine and the same bench as report 5 \citep{Nott-2026aa}: \emph{short} 20 questions with exact answers;
 \emph{easy} and \emph{hard} 40 function-level Python tasks each, read-and-write only, graded by hidden tests;
@@ -338,7 +342,9 @@ rerun and both passed.
 One rep per cell on every set; the run-to-run spread of the same model on the same set is large (short 8/20 against
 15/20, hard 8/40 against 32/40 with a confounder between them). Signal 2's own real set also spreads (5/5 against
 3/5 over two reps). Everything ran on one machine, and the dual runs share its memory and engine. The function sets
-cannot separate setups that differ by a few tasks of 40. Given all of this, no ranking of Gyro-S v2 and Signal 2
+cannot separate setups that differ by a few tasks of 40. The PLE table we loaded (base model's Q8\_0) differs from the
+pairing the model author tested (IQ4\_NL Gyro-S table), and the model card lists v2 as not yet tested in Strata; both
+can matter and this run does not separate them. Given all of this, no ranking of Gyro-S v2 and Signal 2
 follows from these numbers.
 
 \textbf{Verdict as an operational choice:} Signal 2 stays the local worker model; the Gyro-S v2 runtime is stopped
@@ -357,5 +363,11 @@ fault~2 before the fix and rerun.
 \phantomsection
 \addcontentsline{toc}{section}{References}
 \printbibliography[title={References}]
+
+\section*{Changes in 0.2}
+The description of the PLE setup in Section~\ref{sec:setting} was corrected after the model author's question: the run
+used the v2 \emph{-noPLE} file with an external n-gram (PLE) table loaded via \cmd{--ple-gguf}; the earlier text
+described a PLE-less run, which was wrong. Section~\ref{sec:limits} states the table-pairing difference and the model card's note that v2 was not yet
+tested in Strata.
 
 \end{document}
