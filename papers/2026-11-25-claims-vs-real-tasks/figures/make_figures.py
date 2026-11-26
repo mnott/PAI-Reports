@@ -20,7 +20,6 @@ def clean(ax, grid="x"):
 
 
 
-
 # ---- 1 pass rate per set (grouped bars), from tab:sets and tab:rerun ----
 SETS = ["short\n(20)", "easy\n(40)", "hard\n(40)", "real\n(5)"]
 NS = [20, 40, 40, 5]
@@ -146,5 +145,107 @@ fig.text(0.01, 0.01, "Faulty runs refused every start in 1 s and logged them as 
          color=INK2, fontsize=7.5)
 fig.tight_layout(rect=(0, 0.045, 1, 1))
 fig.savefig("fig-instrument-faults.pdf")
+plt.close(fig)
+
+# ---- 5 head-to-head pass rates: six runs of the night (tab:h2h), from h2h-data.md ----
+H2H = ["short\n(20)", "easy\n(40)", "hard\n(40)", "real\n(5)"]
+HN = [20, 40, 40, 5]
+# None = series not usable (phase D real: watchdog fault, recovered outcomes only)
+H2H_RUNS = [("A: Signal 2, single", BLUE, [16, 39, 37, 4]),
+            ("B: Gyro-S v2, single", ORANGE, [2, 39, 11, 3]),
+            ("C: Signal 2, inst. 1", "#5b9bd8", [16, 37, 31, 3]),
+            ("C: Signal 2, inst. 2", "#9ecbf5", [18, 39, 32, None]),
+            ("D: Gyro-S v2, inst. 1", "#f2a65c", [15, 38, 35, None]),
+            ("D: Gyro-S v2, inst. 2", "#f8c98f", [17, 36, 27, None])]
+fig, ax = plt.subplots(figsize=(7.4, 4.0))
+w = 0.13
+for j, (name, c, passed) in enumerate(H2H_RUNS):
+    xs = [i + (j - 2.5) * w for i in range(4)]
+    vals = [None if p is None else 100 * p / n for p, n in zip(passed, HN)]
+    for x, v, p in zip(xs, vals, passed):
+        if v is None:
+            ax.text(x, 3, "fault", ha="center", va="bottom", fontsize=6.5, color=INK2)
+            continue
+        ax.bar(x, v, width=w, color=c, label=name if j == 0 else None)
+        ax.text(x, v + 2.5, str(p), ha="center", va="bottom", fontsize=6.5, color=INK, rotation=90)
+ax.set_xticks(range(4))
+ax.set_xticklabels(H2H)
+ax.set_ylim(0, 125)
+ax.set_yticks([0, 25, 50, 75, 100])
+ax.set_ylabel("share of tasks passed (%)")
+legend = ax.legend(handles=[Patch(color=c, label=name) for name, c, _ in H2H_RUNS],
+                   frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.32), ncol=3)
+for handle in legend.get_patches():
+    handle.set_height(0.6)
+clean(ax, "y")
+ax.set_title("Head-to-head: pass rate per set for the six runs of 25/26 November",
+             loc="left", color=INK, fontsize=9.5, fontweight="bold")
+fig.text(0.01, 0.01, "'fault' = phase D real series stopped by the watchdog; outcomes recovered per task (Sec. of the paper).",
+         color=INK2, fontsize=7)
+fig.tight_layout(rect=(0, 0.16, 1, 1))
+fig.savefig("fig-h2h-pass.pdf")
+plt.close(fig)
+
+# ---- 6 memory per instance: footprint vs resident size, idle and under load (tab:h2h-mem) ----
+MEM = [("S2 single", BLUE, 28, 27, 9.0, 7.5),
+       ("G2 single", ORANGE, 16, 23, 36.6, 43.4),
+       ("S2 double 1", "#5b9bd8", 18, 17, 34.0, 34.0),
+       ("G2 double 1", "#f2a65c", 16, 22, 33.2, 39.2),
+       ("S2 double 2", "#9ecbf5", 17, 25, 35.8, 43.4),
+       ("G2 double 2", "#f8c98f", 16, 22, 36.0, 42.9)]
+fig, ax = plt.subplots(figsize=(7.4, 3.6))
+w = 0.115
+for j, (name, c, fp_i, fp_l, rs_i, rs_l) in enumerate(MEM):
+    base = [i + (j - 2.5) * w for i in range(4)]
+    vals = [fp_i, rs_i, fp_l, rs_l]
+    labels = ["FP idle", "RS idle", "FP load", "RS load"]
+    for x, v, lab in zip(base, vals, labels):
+        hollow = lab.startswith("RS")
+        ax.bar(x, v, width=w, color=(BG if hollow else c), edgecolor=c, linewidth=1.4)
+        ax.text(x, v + 0.8, str(v), ha="center", va="bottom", fontsize=6.5, color=INK)
+ax.set_xticks([i for i in range(4)])
+ax.set_xticklabels(["footprint\nidle", "resident\nidle", "footprint\nload", "resident\nload"])
+ax.set_ylim(0, 52)
+ax.set_ylabel("GiB")
+legend = ax.legend(handles=[Patch(color=c, label=name) for name, c, *_ in MEM] +
+                   [Patch(facecolor=BG, edgecolor=INK, linewidth=1.4, label="resident (hollow): incl. mapped file pages"),
+                    Patch(facecolor=INK, label="footprint (solid): held memory")],
+                   frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.30), ncol=3)
+for handle in legend.get_patches():
+    handle.set_height(0.6)
+clean(ax, "y")
+ax.set_title("Memory per instance: footprint vs resident size, at idle and under load",
+             loc="left", color=INK, fontsize=9.5, fontweight="bold")
+fig.tight_layout(rect=(0, 0.14, 1, 1))
+fig.savefig("fig-h2h-memory.pdf")
+plt.close(fig)
+
+# ---- 7 hard-set spread per model across all runs of the report ----
+SPREAD = [("Gyro-S v2", ORANGE,
+           [("wrong PLE table, solo", 8), ("wrong table, dual (cap 6)", 32),
+            ("author's table, rerun", 33), ("h2h single", 11), ("h2h double A", 35), ("h2h double B", 27)]),
+          ("Signal 2", BLUE,
+           [("ref loop-stopped", 33), ("dual 0.2.21", 30), ("h2h single", 37),
+            ("h2h double A", 31), ("h2h double B", 32)])]
+fig, ax = plt.subplots(figsize=(7.4, 3.4))
+for i, (name, c, pts) in enumerate(SPREAD[::-1]):
+    ys = [len(pts) - 1 - k for k in range(len(pts))]
+    ax.scatter([v for _, v in pts], ys, s=52, color=c, zorder=3)
+    for v, y in zip([p[1] for p in pts], ys):
+        ax.text(v + 1.2, y, str(v), va="center", fontsize=7.5, color=INK)
+ax.set_yticks(range(len(SPREAD[0][2]) + len(SPREAD[1][2])))
+ax.set_yticklabels([p[0] for p in SPREAD[1][2]] + [p[0] for p in SPREAD[0][2]])
+ax.set_xlim(0, 44)
+ax.set_xticks(range(0, 45, 10))
+ax.set_xlabel("hard tasks passed out of 40")
+ax.legend(handles=[Patch(color=c, label=name) for name, c, _ in SPREAD],
+          frameon=False, fontsize=7.5, loc="upper right", bbox_to_anchor=(1.02, 1.03))
+ax.tick_params(axis="y", length=0)
+ax.spines["left"].set_visible(False)
+clean(ax)
+ax.set_title("Hard-set score per run: Gyro-S v2 swings (8-35/40),\nSignal 2 stays in a band (30-37)",
+             loc="left", color=INK, fontsize=9.5, fontweight="bold")
+fig.tight_layout()
+fig.savefig("fig-h2h-spread.pdf")
 plt.close(fig)
 print("ok")
