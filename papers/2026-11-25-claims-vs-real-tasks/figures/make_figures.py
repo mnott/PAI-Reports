@@ -1,5 +1,5 @@
 """Figures of lab report 6. Data are copied from the bench result file (paper6-data.md,
-one JSON per run) and the loop-guard counts quoted in the text. Run: python3 make_figures.py"""
+one JSON per run) and h2h-data.md. Run: python3 make_figures.py"""
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -19,135 +19,7 @@ def clean(ax, grid="x"):
     ax.set_axisbelow(True)
 
 
-
-# ---- 1 pass rate per set (grouped bars), from tab:sets and tab:rerun ----
-SETS = ["short\n(20)", "easy\n(40)", "hard\n(40)", "real\n(5)"]
-NS = [20, 40, 40, 5]
-RUNS = [("Gyro-S v2, alone", ORANGE, [8, 37, 8, 3]),
-        ("Gyro-S v2, author's PLE", "#f2a65c", [15, 37, 33, 4]),
-        ("Gyro-S v2, dual", "#9ecbf5", [15, 35, 32, 2]),
-        ("Signal 2, alone", BLUE, [16, 38, 33, 5]),
-        ("Signal 2, dual", "#1b4f8f", [17, 39, 30, 4])]
-fig, ax = plt.subplots(figsize=(7.4, 3.9))
-w = 0.15
-for j, (name, c, passed) in enumerate(RUNS):
-    xs = [i + (j - 2) * w for i in range(4)]
-    vals = [100 * p / n for p, n in zip(passed, NS)]
-    ax.bar(xs, vals, width=w, color=c, label=name)
-    for x, v, p in zip(xs, vals, passed):
-        ax.text(x, v + 2.5, str(p), ha="center", va="bottom", fontsize=7, color=INK, rotation=90)
-ax.set_xticks(range(4))
-ax.set_xticklabels(SETS)
-ax.set_ylim(0, 125)
-ax.set_yticks([0, 25, 50, 75, 100])
-ax.set_ylabel("share of tasks passed (%)")
-legend = ax.legend(frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.32), ncol=5)
-for handle in legend.get_patches():
-    handle.set_height(0.6)
-clean(ax, "y")
-ax.set_title("Pass rate per set: Gyro-S v2 and Signal 2, alone and in parallel",
-             loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.tight_layout(rect=(0, 0.18, 1, 1))
-fig.savefig("fig-pass-rate.pdf")
-plt.close(fig)
-
-# ---- 2 real tasks: pass/fail and seconds per task, four runs ----
-TASKS = ["prune-dist-\nrerun\n(confounded)", "mirror-sync-\ntoken", "worker-\npriority",
-         "session-move-\nselectors", "escalate-\nloopstop"]
-REAL = [("Gyro-S v2, alone", ORANGE, [(0, 499), (1, 235), (0, 93), (1, 176), (1, 400)]),
-        ("Gyro-S v2, author's PLE", "#f2a65c", [(0, 140), (1, 571), (1, 1651), (1, 386), (1, 596)]),
-        ("Gyro-S v2, dual", "#9ecbf5", [(0, 186), (1, 345), (0, 280), (0, 110), (1, 951)]),
-        ("Signal 2, alone", BLUE, [(1, 1235), (1, 247), (1, 1434), (1, 781), (1, 298)]),
-        ("Signal 2, dual", "#1b4f8f", [(0, 2177), (1, 710), (1, 1073), (1, 649), (1, 279)])]
-fig, ax = plt.subplots(figsize=(7.4, 4.3))
-w = 0.15
-for j, (name, c, rows) in enumerate(REAL):
-    xs = [i + (j - 2) * w for i in range(5)]
-    for x, (ok, s) in zip(xs, rows):
-        ax.bar(x, s / 60, width=w, color=c if ok else BG, edgecolor=c, linewidth=1.4)
-        ax.text(x, s / 60 + 2.5, "P" if ok else "F", ha="center", va="bottom", fontsize=7,
-                color=INK if ok else c, fontweight="bold")
-ax.set_xticks(range(5))
-ax.set_xticklabels(TASKS)
-ax.set_ylim(0, 42)
-ax.set_ylabel("minutes for the task (less is better)")
-legend = ax.legend(handles=[Patch(color=c, label=name) for name, c, _ in REAL] +
-                   [Patch(facecolor=BG, edgecolor=INK, linewidth=1.4, label="fail: hollow bar"),
-                    Patch(color=INK, label="pass: filled bar")],
-                   frameon=False, fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.28), ncol=3)
-for handle in legend.get_patches():
-    handle.set_height(0.6)
-clean(ax, "y")
-ax.set_title("Real tasks per run: pass (P, filled) or fail (F, hollow), bar height is wall time",
-             loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.tight_layout(rect=(0, 0.14, 1, 1))
-fig.savefig("fig-real-tasks.pdf")
-plt.close(fig)
-
-# ---- 3 effort at stop: turns and tokens of a hard run (own axes), plus guard firings ----
-fig, axes = plt.subplots(1, 3, figsize=(7.6, 2.9), gridspec_kw={"width_ratios": [0.85, 0.85, 1.1]})
-effort = [("turns", 13, 46, "turns"), ("output tokens", 3.8, 14.0, "k tok")]
-for ax, (label, g, s, unit) in zip(axes[:2], effort):
-    ax.barh(1, g, height=0.5, color=ORANGE)
-    ax.barh(0, s, height=0.5, color=BLUE)
-    ax.text(g + 0.6, 1, f"{g}", va="center", fontsize=8, color=INK)
-    ax.text(s + 0.6, 0, f"{s}", va="center", fontsize=8, color=INK)
-    ax.set_yticks([0, 1])
-    ax.set_yticklabels(["Signal 2", "Gyro-S v2"])
-    ax.set_xlim(0, max(g, s) * 1.35)
-    ax.tick_params(axis="y", length=0)
-    ax.spines["left"].set_visible(False)
-    clean(ax)
-    ax.set_title(f"{label} ({unit})", loc="left", color=INK, fontsize=9, fontweight="bold")
-
-ax = axes[2]
-guards = [("announced-no-action, solo", 7, ORANGE), ("announced-no-action, dual", 6, "#9ecbf5"),
-          ("identical-write, dual", 14, ORANGE)]
-for i, (label, v, c) in enumerate(guards[::-1]):
-    ax.barh(i, v, height=0.55, color=c)
-    ax.text(v + 0.3, i, str(v), va="center", fontsize=8, color=INK)
-ax.set_yticks(range(3))
-ax.set_yticklabels([g[0] for g in guards[::-1]])
-ax.set_xlim(0, 17)
-ax.set_xlabel("guard firings")
-ax.tick_params(axis="y", length=0)
-ax.spines["left"].set_visible(False)
-clean(ax)
-ax.set_title("Loop-guard firings of Gyro-S v2", loc="left", color=INK, fontsize=9, fontweight="bold")
-fig.text(0.01, 0.01, "Announced-no-action: the model announces a step and ends the turn without doing it;\nidentical-write: the same file content rewritten unchanged.",
-         color=INK2, fontsize=7.5)
-fig.tight_layout(rect=(0, 0.09, 1, 1))
-fig.savefig("fig-effort-guards.pdf")
-plt.close(fig)
-
-# ---- 4 instrument faults: real tasks passed out of 5, faulty run vs corrected ----
-fig, ax = plt.subplots(figsize=(7.0, 2.9))
-faults = [("Gyro-S v2 alone\n(disabled provider logged as done)", 0, "0/5", 3, "3/5"),
-          ("code-graph OFF arm\n(task rewrote the bench config)", 3, "3/5", 5, "5/5")]
-for i, (label, reported, rep_txt, corrected, corr_txt) in enumerate(faults[::-1]):
-    ax.barh(i + 0.2, reported, height=0.34, color=ORANGE)
-    ax.text(reported + 0.15, i + 0.2, rep_txt, va="center", fontsize=7.5, color=INK)
-    ax.barh(i - 0.2, corrected, height=0.34, color=BLUE)
-    ax.text(corrected + 0.15, i - 0.2, corr_txt, va="center", fontsize=7.5, color=INK)
-ax.set_yticks([0, 1])
-ax.set_yticklabels(["code-graph OFF\n(after rerun)", "Gyro-S v2 alone\n(after fix)"])
-ax.set_xlim(0, 6)
-ax.set_xticks(range(6))
-ax.set_xlabel("real tasks passed out of 5")
-ax.legend(handles=[Patch(color=ORANGE, label="what the faulty run reported"),
-                   Patch(color=BLUE, label="the corrected result")],
-          frameon=False, fontsize=7.5, loc="upper left", bbox_to_anchor=(-0.02, 1.02), ncol=2)
-ax.tick_params(axis="y", length=0)
-ax.spines["left"].set_visible(False)
-clean(ax)
-ax.set_title("Two instrument faults: the verdict they would have produced", loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.text(0.01, 0.01, "Faulty runs refused every start in 1 s and logged them as done with 0 passes; both were found and fixed.",
-         color=INK2, fontsize=7.5)
-fig.tight_layout(rect=(0, 0.045, 1, 1))
-fig.savefig("fig-instrument-faults.pdf")
-plt.close(fig)
-
-# ---- 5 head-to-head pass rates: six runs of the night (tab:h2h), from h2h-data.md ----
+# ---- 1 head-to-head pass rates: six runs of the night (tab:h2h), from h2h-data.md ----
 H2H = ["short\n(20)", "easy\n(40)", "hard\n(40)", "real\n(5)"]
 HN = [20, 40, 40, 5]
 # None = series not usable (phase D real: watchdog fault, recovered outcomes only)
@@ -187,7 +59,7 @@ fig.tight_layout(rect=(0, 0.16, 1, 1))
 fig.savefig("fig-h2h-pass.pdf")
 plt.close(fig)
 
-# ---- 6 memory per instance: footprint vs resident size, idle and under load (tab:h2h-mem) ----
+# ---- 2 memory per instance: footprint vs resident size, idle and under load (tab:h2h-mem) ----
 MEM = [("S2 single", BLUE, 28, 27, 9.0, 7.5),
        ("G2 single", ORANGE, 16, 23, 36.6, 43.4),
        ("S2 double 1", "#5b9bd8", 18, 17, 34.0, 34.0),
@@ -221,14 +93,13 @@ fig.tight_layout(rect=(0, 0.14, 1, 1))
 fig.savefig("fig-h2h-memory.pdf")
 plt.close(fig)
 
-# ---- 7 hard-set spread per model across all runs of the report ----
-# One explicit list of (run label, model, hard passed); each point sits on its own labelled row.
-SPREAD_ROWS = [
+# ---- 3 run-to-run spread: hard set (left) and short set (right), per model, one dot per run ----
+HARD_ROWS = [
     ("h2h double B", "Gyro-S v2", 27),
     ("h2h double A", "Gyro-S v2", 35),
     ("h2h single", "Gyro-S v2", 11),
-    ("author's table, cap 2 (rerun)", "Gyro-S v2", 30),
     ("author's table, rerun", "Gyro-S v2", 33),
+    ("author's table, cap 2 (rerun)", "Gyro-S v2", 30),
     ("wrong table, dual (cap 6)", "Gyro-S v2", 32),
     ("wrong table, solo", "Gyro-S v2", 8),
     ("h2h double B", "Signal 2", 32),
@@ -237,24 +108,47 @@ SPREAD_ROWS = [
     ("dual 0.2.21", "Signal 2", 30),
     ("reference run", "Signal 2", 33),
 ]
+SHORT_ROWS = [
+    ("h2h double B", "Gyro-S v2", 17),
+    ("h2h double A", "Gyro-S v2", 15),
+    ("h2h single", "Gyro-S v2", 2),
+    ("author's table, rerun", "Gyro-S v2", 15),
+    ("wrong table, dual (cap 6)", "Gyro-S v2", 15),
+    ("wrong table, solo", "Gyro-S v2", 8),
+    ("h2h double B", "Signal 2", 18),
+    ("h2h double A", "Signal 2", 16),
+    ("h2h single", "Signal 2", 16),
+    ("dual 0.2.21", "Signal 2", 17),
+    ("reference run", "Signal 2", 16),
+]
 MODEL_COLOR = {"Gyro-S v2": ORANGE, "Signal 2": BLUE}
-fig, ax = plt.subplots(figsize=(7.4, 3.6))
-for y, (label, model, v) in enumerate(SPREAD_ROWS):
-    ax.scatter(v, y, s=52, color=MODEL_COLOR[model], zorder=3)
-    ax.text(v + 1.2, y, str(v), va="center", fontsize=7.5, color=INK)
-ax.set_yticks(range(len(SPREAD_ROWS)))
-ax.set_yticklabels([f"{label}  ({m})" for label, m, _ in SPREAD_ROWS])
-ax.set_xlim(0, 44)
-ax.set_xticks(range(0, 45, 10))
-ax.set_xlabel("hard tasks passed out of 40")
-ax.legend(handles=[Patch(color=c, label=m) for m, c in MODEL_COLOR.items()],
-          frameon=False, fontsize=7.5, loc="lower right", bbox_to_anchor=(1.02, -0.02))
-ax.tick_params(axis="y", length=0)
-ax.spines["left"].set_visible(False)
-clean(ax)
-ax.set_title("Hard-set score per run: Gyro-S v2 swings (8-35/40),\nSignal 2 stays in a band (30-37)",
-             loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.tight_layout()
+
+
+def spread_panel(ax, rows, n, xlabel):
+    for y, (label, model, v) in enumerate(rows):
+        ax.scatter(v, y, s=52, color=MODEL_COLOR[model], zorder=3)
+        ax.text(v + 1.2, y, str(v), va="center", fontsize=7.5, color=INK)
+    ax.set_yticks(range(len(rows)))
+    ax.set_yticklabels([f"{label}  ({m})" for label, m, _ in rows], fontsize=7.5)
+    ax.set_xlim(0, n + 4)
+    ax.set_xticks(range(0, n + 1, 10))
+    ax.set_xlabel(xlabel)
+    ax.tick_params(axis="y", length=0)
+    ax.spines["left"].set_visible(False)
+    clean(ax)
+
+
+fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.6), gridspec_kw={"width_ratios": [1.15, 1]})
+spread_panel(axes[0], HARD_ROWS, 40, "hard tasks passed out of 40")
+axes[0].set_title("Hard set: Gyro-S v2 swings (8-35/40),\nSignal 2 stays in a band (30-37)",
+                  loc="left", color=INK, fontsize=9.5, fontweight="bold")
+spread_panel(axes[1], SHORT_ROWS, 20, "short questions passed out of 20")
+axes[1].set_title("Short set: Gyro-S v2 swings (2-17/20),\nSignal 2 stays in a band (16-18)",
+                  loc="left", color=INK, fontsize=9.5, fontweight="bold")
+fig.legend(handles=[Patch(color=c, label=m) for m, c in MODEL_COLOR.items()],
+           frameon=False, fontsize=7.5, loc="lower center", bbox_to_anchor=(0.5, -0.01), ncol=2)
+fig.tight_layout(rect=(0, 0.06, 1, 1))
 fig.savefig("fig-h2h-spread.pdf")
 plt.close(fig)
+
 print("ok")

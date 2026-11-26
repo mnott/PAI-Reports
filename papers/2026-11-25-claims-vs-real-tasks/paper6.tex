@@ -13,7 +13,7 @@
 \def\ttitlepagetitletop{Claimed and Measured}
 \def\ttitlepagesubtitletop{Gyro-S v2 on Real Coding Tasks, and Why the Test Needs Testing Too}
 \def\ttitlepagetitlemiddle{Lab Report}
-\def\ttitlepagesubtitlemiddle{Measurements of 24--25 November 2026}
+\def\ttitlepagesubtitlemiddle{Measurements of 24--26 November 2026}
 
 \def\torganization{Independent Research}
 \def\tsubmissiondate{25 November 2026}
@@ -103,25 +103,21 @@
 \begin{minipage}{0.86\textwidth}
 \section*{Abstract}
 
-A model announcement claims 18\,\% less drift on held-out text, 27\,\% less on tool calls and 14\,\% less on code for
-Gyro-S v2. This report runs the same bench as report 5 --- 20 questions, 40 easy and 40 hard graded function tasks,
-and five replayed real repository fixes judged by hidden tests --- on Gyro-S v2 alone and in parallel with Signal 2,
-against Signal 2's own reference runs. Alone it passes 8/20, 37/40, 8/40 and 3 of 5 real tasks; beside Signal 2,
-15/20, 35/40, 32/40 and 2 of 5. Its failures are behavioural: early stops with missing answers (28 of 40 hard
-answers missing), announcing a step and ending the turn without doing it (7 guard hits alone), and identical-write
-loops (14 guard hits in the dual run). A model-specific workaround --- raising the announced-no-action cap from 2 to
-6 for Gyro-S only --- coincides with the jump from 8/40 to 32/40, so that gain is confounded. Two instrument faults
-of the same night would have produced wrong verdicts: a provider registered disabled was logged as ``done'' with
-1-second walls and 0 passes (Gyro-S would have scored 0\,\%), and a real task rewrote the bench's shared config so
-the next two tasks were refused in 1 second (a code-graph ``off'' arm would have read 3/5). Both were found and
-fixed: the bench now resolves the provider before the series, records refused starts as errors, and rewrites its own
-config before every task. After the model author asked whether the external PLE table had been used, we found that we had loaded the base model's table instead of the Gyro-S table the model card pairs with this file, and we reran with
-the table their card pairs with this file: hard goes from 8/40 to 30/40 at the same guard cap --- the earlier gap was
-our setup (the wrong table pairing), not the model. With the paired table Gyro-S v2 performs at Signal 2's level on
-this bench (hard 33/40 against Signal 2's 33/40; real 4/5, with the only failure on the confounded task). One rep per
-cell still leaves no ranking of the two models and the operational choice stays open: Signal 2 remains the local
-worker for now, Gyro-S v2 kept installed. A real test only counts once the test itself has been verified --- here, a
-third time, in the model setup.
+A model announcement claims Gyro-S v2 drifts 18\,\% less on held-out text, 27\,\% less on tool calls and 14\,\% less
+on code than its base. We asked what the same model does as a local coding worker --- writing files that hidden tests
+grade --- and measured it head-to-head against Signal 2 on one Apple M5 Max: 20 questions, 40 easy and 40 hard graded
+function tasks, and five replayed real repository fixes, each run once. Accuracy is at best a draw: on the hard set
+Gyro-S v2 reaches 35/40 against Signal 2's 37/40, and the easy and short sets are similar. Speed is not: Gyro-S v2 is
+slower everywhere --- 899--1{,}195\,s against 490--624\,s on the hard set, 2{,}861\,s against 2{,}141\,s on the real
+tasks run alone, and a much lower token rate. Stability is where they really differ: Gyro-S v2 swings from run to run
+(hard 8--35/40, short 2--17/20) because it often stops early with answers missing, while Signal 2 stays inside a narrow
+band (hard 30--37/40). On the real tasks Gyro-S v2 tends to be weaker (3/5, 4/5, and one incomplete run an engine stall
+ended) against Signal 2's 4/5, 5/5, 3/5, 3/5 and 4/5 --- a tendency, not a clean gap, since each ran once. In memory,
+Signal 2 holds about 27\,GB per instance mostly on the GPU; Gyro-S v2 keeps a smaller footprint (16--26\,GB) but a far
+larger resident size (35--49\,GB), because its experts and PLE table are read from the SSD, and two instances of it
+leave only about 4\,GB free. Our first run had loaded the wrong PLE table --- the base model's instead of the one this
+model card pairs with --- which made Gyro-S v2 look far worse than it is; we found that after the author's question and
+reran. One lesson: verify the test and the setup before a verdict.
 
 \end{minipage}
 \end{center}
@@ -169,9 +165,9 @@ On 24 November the author of a fine-tune announced it with measured numbers: ``G
 calls, 14\,\% less on code.'' Those are percentages on held-out data of the fine-tuning recipe. The question this
 report asks is what the same model does in the role report 5 defined \citep{Nott-2026aa}: a local coding worker under
 Claude Code \citep{Anthropic-2026aa} on the engine Strata \citep{Strata-2026aa}, writing files that hidden tests grade.
-Claimed percentages and bench passes measure different things; this report sets the claim beside what the bench measures,
-and reports two faults of the measuring instrument found the same night --- because a real test only
-counts once the test itself has been verified.
+Claimed percentages and bench passes measure different things, so this report sets the claim beside what the bench
+measures --- and reports a setup mistake of our own that changed the answer, because a real test only counts once the
+test and the setup have been verified.
 
 \section{Setting}\label{sec:setting}
 
@@ -181,231 +177,45 @@ The model is Qwen3.8-Flash-Next-Gyro-S v2, quantised TQ1\_0, file 29{,}686{,}877
 GGUF.\footnote{SHA-256 \texttt{e33a245502a4ae00\allowbreak 83ac2064b019f948\allowbreak f5a2cfec6152b1dd\allowbreak 6854dd014aee66bb}, matching the model author's changelog.}
 PLE (per-layer embedding) is a large lookup table that layer 1 of the model reads for every token, indexed by the
 current and previous tokens (an n-gram table). It makes up about half of a full model file and stays on disk; the
-\emph{-noPLE} files ship without it and load it from a separate file. Here the table is loaded via \cmd{--ple-gguf}: the base model's table at Q8\_0
-(320{,}001{,}536 rows), not the IQ4\_NL Gyro-S table the model card pairs with this file. The runtime pack was built
+\emph{-noPLE} files ship without it and load it from a separate file via \cmd{--ple-gguf}. The correct pairing for this
+file is the IQ4\_NL Gyro-S table on the model card; our first run loaded the base model's Q8\_0 table instead --- see
+Section~\ref{sec:first}. All results here use the author's IQ4\_NL table, loaded fresh. The runtime pack was built
 fresh from the v2 file; no earlier pack was reused. This ran on Strata 0.2.21 Metal (our port branch), with MTP drafts
-on. A smoke test before the bench: correct
-output, 92 tokens/s decode, MTP acceptance 44 of 48. The machine is one Apple M5 Max with 128\,GB unified memory ---
-the same machine and the same bench as report 5 \citep{Nott-2026aa}: \emph{short} 20 questions with exact answers;
-\emph{easy} and \emph{hard} 40 function-level Python tasks each, read-and-write only, graded by hidden tests;
-\emph{real} five replayed fixes from the PAI repository (prune-dist-rerun, mirror-sync-token, worker-priority,
-session-move-selectors, escalate-loopstop) graded by hidden behaviour tests, 30-minute cap per task. prune-dist-rerun
-is confounded by the machine (its visible test is red before any edit; see report 5) and stays called out where it
-matters.
+on. A smoke test before the bench: correct output, 92 tokens/s decode, MTP acceptance 44 of 48.
 
-\subsection{Keys and what they mean}
+\subsection{The machine and the bench}
 
-Table~\ref{tab:keys} names every run of this report. The keys gyro-s2-v2 and gyro-s2-v2b are \emph{not} model results:
-they are an instrument fault, described in Section~\ref{sec:faults}, and are excluded from every table.
+The machine is one Apple M5 Max with 128\,GB unified memory --- the same machine and the same bench as report 5
+\citep{Nott-2026aa}: \emph{short} 20 questions with exact answers; \emph{easy} and \emph{hard} 40 function-level
+Python tasks each, read-and-write only, graded by hidden tests; \emph{real} five replayed fixes from the PAI
+repository (prune-dist-rerun, mirror-sync-token, worker-priority, session-move-selectors, escalate-loopstop) graded by
+hidden behaviour tests, 30-minute cap per task. prune-dist-rerun is confounded by the machine (its visible test is red
+before any edit; see report 5) and fails for every model here; it stays called out where it matters.
 
-\begin{table}[H]
-\centering
-\small
-\caption{Keys of this report}\label{tab:keys}
-\resizebox{\textwidth}{!}{\begin{tabular}{P{3.4cm}P{2.6cm}P{7.6cm}}
-\toprule
-Key & Setup & Note \\
-\midrule
-gyro-s2-v2c & Gyro-S v2 alone & Runs of 24 November, default guard settings; base Q8\_0 PLE table \\
-gyro-s2-v2-dual & Gyro-S v2 beside Signal 2 & Two servers in parallel; announced-no-action cap raised 2 $\to$ 6 for Gyro-S only (from the hard set on); base Q8\_0 PLE table \\
-signal-2-2026-11-23 & Signal 2 alone & Reference run of report 5 (23 November) \\
-signal-2-dual-0221 & Signal 2 beside Gyro-S & Same night as gyro-s2-v2-dual, Strata 0.2.21 \\
-gyro-s2-v2-ple4 & Gyro-S v2 alone, rerun & Author's IQ4\_NL PLE table (Section~\ref{sec:rerun}), cap 6 \\
-gyro-s2-v2-ple4-cap2 & Same, guard cap back to 2 & Hard set only (Section~\ref{sec:rerun}) \\
-gyro-s2-v2, gyro-s2-v2b & --- & Instrument fault (Section~\ref{sec:faults}); excluded \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\subsection{How the head-to-head ran}\label{sec:h2h-setup}
 
-\section{Results}\label{sec:results}
+On the night of 25/26 November both models ran the whole bench on this machine, Gyro-S v2 with the author's IQ4\_NL
+PLE table and announced-no-action guard cap 6 (the corrected setup), Signal 2 with its default caps. Four phases ran in
+sequence: \textbf{A} Signal 2, one instance; \textbf{B} Gyro-S v2, one instance; \textbf{C} Signal 2, two instances in
+parallel; \textbf{D} Gyro-S v2, two instances in parallel. During each phase the other model's servers were stopped, so
+no run shared its machine with a foreign engine. One rep per set per instance (keys h2h-s2-single, h2h-g2-single,
+h2h-s2-dualA/B, h2h-g2-dualA/B). Signal 2's solo numbers are also its own reference runs from report 5; where a run was
+loop-stopped after the shown number of correct writes (the guard fired on unchanged rewrites of finished files), the
+passes stand and the run did not finish cleanly --- noted in the tables.
 
-\subsection{Pass rates and times}
+\section{Results: head-to-head}\label{sec:results}
 
-Table~\ref{tab:sets} gives the four sets. Each cell is one run unless stated. The dual columns ran at the same time on
-the same machine, so each of them carries the other's load; Signal 2's solo numbers are its own reference runs.
+\subsection{Pass rates}\label{sec:h2h-pass}
 
-\begin{table}[H]
-\centering
-\small
-\caption{Passed tasks, wall time and whole-run output speed (one run per cell unless stated)}\label{tab:sets}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrrr}
-\toprule
-Run & short (20) & easy (40) & hard (40) & real (5) \\
-\midrule
-Gyro-S v2, alone & 8, 78\,s, 12.1\,tok/s & 37, 8.3\,min, 2.2\,tok/s & 8, 3.7\,min, 24.1\,tok/s & 3, 23.5\,min \\
-Gyro-S v2, dual & 15, 4.5\,min, 6.9\,tok/s & 35, 13.8\,min, 0.5\,tok/s & 32, 19.5\,min, 17.2\,tok/s & 2, 31.4\,min \\
-Signal 2, alone & 16, 52\,s, 40.0\,tok/s & 38$^{a}$, 5.5\,min, 32.5\,tok/s & 33$^{a}$, 9.0\,min, 26.3\,tok/s & 5, 67\,min \\
-Signal 2, dual & 17, 3.5\,min, 8.9\,tok/s & 39, 8.9\,min, 16.9\,tok/s & 30$^{b}$, 22.6\,min, 16.9\,tok/s & 4, 82\,min \\
-\bottomrule
-\end{tabular}}
-\par\smallskip{\footnotesize\raggedright $^{a}$ Signal 2's easy and hard runs here were loop-stopped after 38/40 and 33/40 correct writes (the guard fired on unchanged rewrites of finished files); the passes stand, the run did not finish cleanly. $^{b}$ Likewise loop-stopped after 30/40. Real cells: wall time of the whole run; Gyro-S real output 11{,}045 tokens alone, 11{,}882 in the dual run. Signal 2 alone ran a second real run: 3/5 in 55\,min (rep~2), so 8 of 10 over its two runs.\par}
-\end{table}
-
-Gyro-S v2 alone is weakest where answers must be complete: on the hard set 28 of 40 answers are missing entirely. Its
-easy-set pass rate (37/40) looks close to Signal 2's, but that set rewards writing something for every prompt; the
-hard set and the real tasks separate the two. In the dual run Gyro-S rises to 15/20 and 32/40 --- see
-Section~\ref{sec:workaround} for why that rise is not a clean effect of the model, and Section~\ref{sec:rerun} for
-what the rerun with the author's PLE table shows.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figures/fig-pass-rate.pdf}
-\caption{Pass rate per set for the runs of Table~\ref{tab:sets}, plus the rerun with the model author's PLE table (Section~\ref{sec:rerun}). Orange is Gyro-S v2, blue shades Signal 2; lighter shades are the dual runs (two servers on one machine). Labels give passed tasks of $n$.}\label{fig:pass}
-\end{figure}
-
-\begin{table}[H]
-\centering
-\small
-\caption{Real tasks, pass and seconds per task}\label{tab:real}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}
-\toprule
-Task & Gyro-S alone & Gyro-S dual & Signal 2 alone & Signal 2 dual \\
-\midrule
-prune-dist-rerun (confounded) & fail, 499\,s & fail, 186\,s & pass, 1{,}235\,s & fail, 2{,}177\,s \\
-mirror-sync-token & pass, 235\,s & pass, 345\,s & pass, 247\,s & pass, 710\,s \\
-worker-priority & fail, 93\,s & fail, 280\,s & pass, 1{,}434\,s & pass, 1{,}073\,s \\
-session-move-selectors & pass, 176\,s & fail, 110\,s & pass, 781\,s & pass, 649\,s \\
-escalate-loopstop & pass, 400\,s & pass, 951\,s & pass, 298\,s & pass, 279\,s \\
-\midrule
-Total & 3/5 & 2/5 & 5/5 (rep~1), 3/5 (rep~2) & 4/5 \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figures/fig-real-tasks.pdf}
-\caption{The five real tasks of Table~\ref{tab:real}, plus the rerun with the author's PLE table (Section~\ref{sec:rerun}): filled bars passed, hollow bars failed the hidden tests; bar height is wall time. Orange is Gyro-S v2, blue shades Signal 2.}\label{fig:real}
-\end{figure}
-
-Gyro-S v2's real failures are short (Figure~\ref{fig:real}): worker-priority fails after 93 and 280 seconds, session-move-selectors after 110
-seconds in the dual run --- the model stops before producing a fix. Signal 2 needs longer (its passes cost 6--24
-minutes on the two exploration-heavy tasks) but produces them.
-
-\section{Failure modes}\label{sec:failures}
-
-Three behavioural patterns appear in Gyro-S v2's transcripts, counted by the harness's loop guard:
-
-\begin{itemize}
-\item \textbf{Early stops.} Answers are never written (hard set: 28 of 40 missing) and real tasks end without a fix.
-A hard run of Gyro-S uses 13 turns and 3.8 thousand tokens; the same set for Signal 2 uses 46 turns and 14 thousand.
-\item \textbf{Announced-no-action.} The model announces a step (``I will now write the patch'') and ends the turn
-without doing it. The guard's pattern fired 7 times in the solo run.
-\item \textbf{Identical-write loops.} The same file content is rewritten unchanged; in the dual run this pattern fired
-14 times (announced-no-action 6 times). Signal 2 also loop-stopped on unchanged rewrites of finished files
-(its easy, hard and dual-hard runs above), so this is not a Gyro-S-only habit.
-\end{itemize}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figures/fig-effort-guards.pdf}
-\caption{Left: work done in one hard run --- Gyro-S v2 stops after 13 turns and 3.8 thousand output tokens, Signal 2 after 46 turns and 14 thousand. Right: loop-guard firings of Gyro-S v2 (announced-no-action 7 solo and 6 dual, identical-write 14 dual).}\label{fig:effort}
-\end{figure}
-
-Figure~\ref{fig:effort} shows the effort at stop beside the guard counts. The early-stop pattern is visible directly: a hard run of Gyro-S does a third of Signal 2's work and then stops with answers missing.
-
-\subsection{The model-specific workaround, and why its effect is confounded}\label{sec:workaround}
-
-To keep Gyro-S from being stopped by the announced-no-action guard, that guard's cap was raised from 2 to 6 for
-Gyro-S only, starting from the hard set of the dual run. Hard went from 8/40 (solo, no cap change) to 32/40 (dual,
-cap raised). The two runs differ in more than the model: the raised cap, a second model server on the same
-machine, and ordinary run-to-run spread --- so the jump cannot be attributed to the model being better. Short shows the same
-spread without any intervention: 8/20 solo against 15/20 dual, run-to-run noise of the same order as the ``effect''.
-One rep per cell is not a verdict (Section~\ref{sec:limits}).
-
-\section{Two instrument faults}\label{sec:faults}
-
-Both faults were found the same night, and each one, uncaught, would have produced a wrong conclusion
-(Figure~\ref{fig:faults}).
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{figures/fig-instrument-faults.pdf}
-\caption{The two instrument faults: orange is what the faulty run reported (Gyro-S v2 ``0 \% everywhere''; code-graph OFF ``3/5''), blue is the corrected result after the fix and rerun (measured 8/20, 37/40, 8/40, 3/5; and 5/5).}\label{fig:faults}
-\end{figure}
-
-\subsection{A disabled provider logged as done}\label{sec:fault1}
-
-The provider \cmd{gyro-s2} was registered \emph{disabled}. Every worker start refused (exit code 2), but the bench
-logged ``done rc=0'' with 1-second walls and 0 passes. The keys gyro-s2-v2 and gyro-s2-v2b are this fault: four sets,
-all 0 passes, all walls of 1\,s --- physically impossible for real runs (the same tasks took minutes once the provider
-was enabled). \textbf{What it would have made us conclude:} Gyro-S v2 scores 0\,\% everywhere; a new model that fails
-every set is usually retired immediately. \textbf{How it was found:} at 23:22, when enabling the provider and rerunning
-produced plausible numbers in minutes, against ``done'' runs of one second. \textbf{How it was fixed:} the bench now
-resolves the provider before the series (preflight), and a refused start is recorded as an error, not as a completed
-run with zeros. The two faulty keys are excluded from every table in this report.
-
-\subsection{The shared bench config rewritten by a task}\label{sec:fault2}
-
-A real task under test ran \cmd{pai} commands that rewrote the bench's own shared private config, setting
-\cmd{workers.enabled:false}. The next two tasks of that series were refused in 1 second each. This fault hit the
-code-graph A/B experiment (Section~\ref{sec:codegraph}): its ``off'' arm would have read 3/5 instead of 5/5.
-\textbf{What it would have made us conclude:} turning code-graph off costs two real tasks --- a finding in the wrong
-direction. \textbf{How it was found:} the refused tasks showed a 1-second wall and no work, the same signature as
-fault~1; inspecting the config showed the task's own write. \textbf{How it was fixed:} the bench rewrites its config
-before every task (PAI 1.2.138), so a task cannot leave the harness disabled behind it. The two refused tasks were
-rerun and both passed.
-
-\section{Rerun with the model author's PLE table}\label{sec:rerun}
-
-After this report went out, the model author replied on X: ``I hope it was ran with external ple? Ple must be used.
-... There results don't align with my testing.'' That pointed at a setup difference we had already flagged in
-Section~\ref{sec:limits}: we had loaded the base model's PLE table at Q8\_0, while the model card pairs this
-\emph{-noPLE} file with an external IQ4\_NL table built for Gyro-S. We reran with exactly that pairing --- same v2
-file, same fresh pack, Strata 0.2.21, same bench, same machine; the server log confirms ``PLE on, table
-320{,}001{,}536 rows of \ldots/Qwen3.8-Flash-Next-PLE-IQ4\_NL-GyroS.gguf''. One rep per set, announced-no-action cap
-6 (key gyro-s2-v2-ple4); then the hard set again at cap 2, the original setting of the solo run (key
-gyro-s2-v2-ple4-cap2).
-
-\begin{table}[H]
-\centering
-\small
-\caption{Rerun with the author's IQ4\_NL PLE table (one rep per set)}\label{tab:rerun}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}
-\toprule
-Run & short (20) & easy (40) & hard (40) & real (5) \\
-\midrule
-Gyro-S v2, base Q8\_0 table, cap 2 (Section~\ref{sec:results}) & 8, 78\,s & 37, 8.3\,min & 8, 3.7\,min & 3, 23.5\,min \\
-Gyro-S v2, author's IQ4\_NL table, cap 6 & 15, 148\,s, 11.4\,tok/s & 37, 728\,s & 33, 645\,s, 6.5\,tok/s & 4, 3{,}352\,s \\
-Gyro-S v2, author's IQ4\_NL table, cap 2 & --- & --- & 30, 727\,s & --- \\
-Signal 2, alone (reference) & 16, 52\,s & 38$^{a}$, 5.5\,min & 33$^{a}$, 9.0\,min & 5, 67\,min \\
-\bottomrule
-\end{tabular}}
-\par\smallskip{\footnotesize\raggedright $^{a}$ Loop-stopped after 38/40 and 33/40 correct writes (Table~\ref{tab:sets}). Rerun real tasks: prune-dist-rerun fail 140\,s (the confounded task), mirror-sync-token pass 571\,s, worker-priority pass 1{,}651\,s, session-move-selectors pass 386\,s, escalate-loopstop pass 596\,s; real output 16{,}985 tokens.\par}
-\end{table}
-
-Holding the guard cap at 2 isolates the table: hard goes from 8/40 (base table) to 30/40 (author's table), and short
-from 8/20 to 15/20 --- both with nothing else changed. The raised cap adds about three more on hard (30 $\to$ 33).
-So the main effect is the PLE table pairing, not the guard workaround: the earlier gap between Gyro-S v2 and Signal 2
-was our setup (the wrong table), not the model. With the paired table Gyro-S v2 sits at Signal 2's level on this bench
-(hard 33/40 against 33/40; real 4/5, with the only failure on the confounded task prune-dist-rerun, where Signal 2's
-own dual run also fails). The behavioural patterns of Section~\ref{sec:failures} persist --- announced-no-action and
-identical-write guards still fire --- but they no longer cost missing answers at the same rate.
-
-This is the paper's own point made a third time: before a verdict, the test has to be verified --- here, the model
-setup itself. What we measured on 24 November was not what the author tested.
-
-\section{Head-to-head: single and double instances}\label{sec:h2h}
-
-The rerun of Section~\ref{sec:rerun} closed the setup difference, but left the operational question open: on this
-machine, is one instance of a model better than two in parallel? On the night of 25/26 November both models were run
-head-to-head on the same bench, the same machine (Apple M5 Max, 128\,GB) and Strata 0.2.21: Gyro-S v2 with the
-author's IQ4\_NL PLE table and announced-no-action cap 6 (the corrected setup), Signal 2 with its default caps. Four
-phases ran in sequence --- \textbf{A} Signal 2, one instance; \textbf{B} Gyro-S v2, one instance; \textbf{C} Signal 2,
-two instances in parallel; \textbf{D} Gyro-S v2, two instances in parallel. During each phase the other model's servers
-were stopped, so no run shared its machine with a foreign engine. One rep per set per instance; keys h2h-s2-single,
-h2h-g2-single, h2h-s2-dualA/B, h2h-g2-dualA/B.
-
-\subsection{Pass rates and wall times}\label{sec:h2h-pass}
-
-Table~\ref{tab:h2h} gives every run of the night. In the dual phases each instance ran the whole bench against itself;
-the two instances of a phase overlap, so their wall times differ (each carries the other's load unevenly).
+Table~\ref{tab:h2h} is the night's data: passed tasks and wall time per set, one rep per cell. In the dual phases each
+instance ran the whole bench against itself; the two instances of a phase overlap, so their wall times differ (each
+carries the other's load unevenly).
 
 \begin{table}[H]
 \centering
 \small
 \caption{Head-to-head, one rep per run: passed tasks and wall time per set}\label{tab:h2h}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrrr}
+\begin{tabular}{lrrrr}
 \toprule
 Run & short (20) & easy (40) & hard (40) & real (5) \\
 \midrule
@@ -416,31 +226,59 @@ C: Signal 2, instance 2 & 18, 78\,s & 39, 202\,s & 32, 624\,s$^{a}$ & 4, 4{,}775
 D: Gyro-S v2, instance 1 & 15, 179\,s & 38, 737\,s & 35, 1{,}195\,s & incomplete$^{b}$ \\
 D: Gyro-S v2, instance 2 & 17, 133\,s & 36, 854\,s & 27, 899\,s & incomplete$^{b}$ \\
 \bottomrule
-\end{tabular}}
-\par\smallskip{\footnotesize\raggedright $^{a}$ Run loop-stopped after the shown number of correct writes (the guard fired on unchanged rewrites of finished files); the passes stand, the run did not finish cleanly. $^{b}$ Both real series of phase D were stopped by the harness watchdog after 15 minutes without worker activity and wrote an empty result; see Section~\ref{sec:h2h-fault}. \par}
+\end{tabular}
+\par\smallskip{\footnotesize\raggedright $^{a}$ Run loop-stopped after the shown number of correct writes (the guard fired on unchanged rewrites of finished files); the passes stand, the run did not finish cleanly. $^{b}$ Both real series of phase~D were stopped by the harness watchdog after 15 minutes without worker activity and wrote an empty result; recovered outcomes are in Table~\ref{tab:h2h-real} and Section~\ref{sec:h2h-fault}. \par}
 \end{table}
 
-Figure~\ref{fig:h2h-pass} shows the same numbers as shares. The night's picture is not a clean winner: Signal 2 passes
-more of the hard set in every single run (37 against 11), but Gyro-S v2's two dual instances reach 35 and 27 --- its
-early stopping varies strongly from run to run (Section~\ref{sec:h2h-spread}), so no single number describes it.
+Figure~\ref{fig:h2h-pass} is the same numbers as shares, so accuracy can be read at a glance. It supports finding (a):
+accuracy is at best a draw --- Gyro-S v2's best hard score (35/40, instance~1 of phase~D) sits just below Signal 2's
+best (37/40), and the easy set is close for both (36--39/40). It also shows finding (c): Gyro-S v2's bars swing hard
+from run to run, while Signal 2's are steady.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/fig-h2h-pass.pdf}
-\caption{Pass rate per set for the six runs of Table~\ref{tab:h2h}. Orange shades are Gyro-S v2, blue shades Signal 2; darker shades are single instances, lighter the two parallel instances. Labels give passed tasks of $n$.}\label{fig:h2h-pass}
+\caption{Pass rate per set for the six runs of Table~\ref{tab:h2h}. Orange shades are Gyro-S v2, blue shades Signal 2; darker shades are single instances, lighter the two parallel instances. Labels give passed tasks of $n$; the hatched bar marks phase~D's incomplete real series.}\label{fig:h2h-pass}
 \end{figure}
 
-\subsection{Real tasks per run}\label{sec:h2h-real}
+\subsection{Speed}\label{sec:h2h-speed}
 
-Table~\ref{tab:h2h-real} gives the five replayed fixes per run, pass or fail with wall seconds. prune-dist-rerun
-fails everywhere (the confounded task of report 5); escalate-loopstop passes for every Signal 2 run and both Gyro-S
-runs that reached it.
+Gyro-S v2 is slower on every set, and the gap widens as tasks get harder. On the hard set its two dual instances took
+899--1{,}195\,s against Signal 2's 490--624\,s; run alone, its real series took 2{,}861\,s against Signal 2's
+2{,}141\,s. Its whole-run output rate is far lower (single hard 2.16\,tok/s against Signal 2's 31.5; single easy 2.44
+against 51.2), because it spends most of its turns announcing work and stopping rather than writing --- the early-stop
+pattern behind finding (c). This is why the operational choice leans toward Signal 2 (Section~\ref{sec:limits}).
+
+\subsection{Stability}\label{sec:h2h-spread}
+
+The hard set is where the night's real difference shows. Gyro-S v2 (author's table, cap 6) scored \textbf{11/40}
+single, \textbf{35/40} and \textbf{27/40} as the two dual instances; Signal 2 scored \textbf{37}, \textbf{31} and
+\textbf{32}. Gyro-S v2's early stopping --- answers never written, turns ending after announcements --- varies strongly
+from run to run (its short set swings 2--17/20); Signal 2 stays inside a narrow band. That variance, not either model's
+best case, is the practical difference between them: a worker whose hard-set score swings between 11/40 and 35/40
+cannot be planned around, while one that stays in the 31--37 band can.
+
+Figure~\ref{fig:h2h-spread} plots every hard-set run of this report as one dot per run, so the spread is visible rather
+than summarized. It supports finding (c): Gyro-S v2's dots scatter across 8--35/40 (the two lowest were our first runs,
+with the wrong PLE table --- Section~\ref{sec:first}), while Signal 2's sit in a tight column at 30--37.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/fig-h2h-spread.pdf}
+\caption{Hard-set score per run across all runs of this report (one rep each). Gyro-S v2's dots swing widely (8--35/40; the two lowest are the first runs with the wrong PLE table, Section~\ref{sec:first}); Signal 2 stays in a narrow band (30--37/40).}\label{fig:h2h-spread}
+\end{figure}
+
+\subsection{Real tasks}\label{sec:h2h-real}
+
+Table~\ref{tab:h2h-real} gives the five replayed fixes per run, pass or fail with wall seconds. prune-dist-rerun fails
+everywhere (the confounded task of report 5); escalate-loopstop passes for every Signal 2 run and both Gyro-S runs that
+reached it.
 
 \begin{table}[H]
 \centering
 \small
 \caption{Real tasks, pass/fail and seconds per run}\label{tab:h2h-real}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
 Task & A: S2 single & B: G2 single & C1: S2 & C2: S2 \\
 \midrule
@@ -452,43 +290,19 @@ escalate-loopstop & pass, 153\,s & pass, 297\,s & fail, 377\,s & pass, 162\,s \\
 \midrule
 Total & 4/5 & 3/5 & 3/5 & 4/5 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 
-Phase D's real series did not produce a usable score (Section~\ref{sec:h2h-fault}): from the per-task hidden-test
-logs, instance~1 got mirror-sync-token \emph{pass}, prune-dist-rerun \emph{fail} and worker-priority \emph{fail} before
+Phase~D's real series did not produce a usable score (Section~\ref{sec:h2h-fault}). From the per-task hidden-test logs,
+instance~1 got mirror-sync-token \emph{pass}, prune-dist-rerun \emph{fail} and worker-priority \emph{fail} before
 stopping during task~4; instance~2 got mirror-sync-token \emph{pass} and prune-dist-rerun \emph{fail} before stopping
 during task~3. These are reported as recovered outcomes, not as 0/5.
 
-\subsection{Throughput}\label{sec:h2h-throughput}
+Across the usable runs Gyro-S v2 tends to be weaker on real work --- 3/5 and 4/5 run alone, plus the two incomplete
+parallel runs --- against Signal 2's 4/5, 5/5 (report 5), 3/5, 3/5 and 4/5. This is finding (d): a tendency, not a
+clean gap, because each ran once and one of Gyro-S v2's runs was ended by an engine stall rather than by the model.
 
-Table~\ref{tab:h2h-thr} is the operational view: passed real tasks per hour. For a single instance that is
-passed\,/\,wall; for a phase with two instances it is the \emph{sum} of both instances' passes over the \emph{longer}
-of the two wall times --- what the machine delivered per hour. Phase~D is excluded from throughput: its real series
-was faulted (Section~\ref{sec:h2h-fault}), and its function sets alone would not answer the operational question.
-
-\begin{table}[H]
-\centering
-\small
-\caption{Real-task throughput per phase}\label{tab:h2h-thr}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrr}
-\toprule
-Phase & Passed real tasks & Wall (s) & Passed per hour \\
-\midrule
-A: Signal 2, single & 4 & 2{,}141 & 6.75 \\
-B: Gyro-S v2, single & 3 & 2{,}861 & 3.77 \\
-C: Signal 2, double & 7 (3 + 4) & 4{,}775 (max of 4{,}532 and 4{,}775) & 5.26 \\
-D: Gyro-S v2, double & --- & --- & faulted (Section~\ref{sec:h2h-fault}) \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-Signal 2's single instance beats its own double here: two instances pass 7 tasks but take more than twice the time of
-one, so throughput drops from 6.75 to 5.26 per hour --- on this machine the real tasks saturate the shared engine, and
-a second instance mostly adds waiting, not work. The whole-night totals (all four sets) are 4{,}389\,s for phase~A,
-3{,}597\,s for phase~B, 10{,}106\,s for phase~C and 12{,}364\,s for phase~D.
-
-\subsection{Memory per instance}\label{sec:h2h-mem}
+\subsection{Memory}\label{sec:h2h-mem}
 
 The driver recorded, at idle, under load and after each phase, the engine process's \emph{footprint} (the memory it
 actually holds, including GPU-resident weights) and its \emph{resident size} (rss, which also counts file pages mapped
@@ -498,7 +312,7 @@ from disk), plus the system's free memory.
 \centering
 \small
 \caption{Engine memory per instance: footprint and resident size}\label{tab:h2h-mem}
-\resizebox{\textwidth}{!}{\begin{tabular}{lrrr|rrr}
+\begin{tabular}{lrrr|rrr}
 \toprule
 & \multicolumn{3}{c|}{Signal 2 (GiB)} & \multicolumn{3}{c}{Gyro-S v2 (GiB)} \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}
@@ -508,9 +322,19 @@ Single & 28 & 27 & 30 & 16 & 23 & 26 \\
 Double, inst.~1 & 18 & 17 & 24 & 16 & 22 & ---$^{a}$ \\
 Double, inst.~2 & 17 & 25 & 27 & 16 & 22 & 26 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \par\smallskip{\footnotesize\raggedright $^{a}$ Instance~1's engine was stopped by Strata's stall watchdog (issue~\#29) during phase~D; no after-phase sample. \par}
 \end{table}
+
+Figure~\ref{fig:h2h-mem} shows footprint against resident size per instance, at idle and under load. It supports
+finding (e): reading only one number misleads about how these models fit in memory. Gyro-S v2's \emph{footprint} is
+smaller than Signal 2's (16--26\,GiB against 17--30\,GiB), but its \emph{resident size} is far larger (35--49\,GiB
+against 9--45\,GiB): Gyro-S v2 is a 125B MoE whose experts and whose PLE table are memory-mapped from the SSD --- those
+file pages count as resident even though the process does not hold them, and the engine reads them on demand. Signal 2
+keeps its weights mostly in GPU (wired) memory, so its footprint is large while its resident size is modest. The
+system's free memory tracked this: phases C and D ran with only 0.1--5\,GiB free and heavy compression (up to 30\,GiB
+compressed), the signature of SSD-paged MoE serving on a 128\,GB machine; two Gyro-S v2 instances leave about 4\,GB
+free.
 
 \begin{figure}[H]
 \centering
@@ -518,76 +342,96 @@ Double, inst.~2 & 17 & 25 & 27 & 16 & 22 & 26 \\
 \caption{Memory per instance: footprint (solid, memory the process actually holds) against resident size (hollow, includes file pages mapped from disk), at idle and under load. Signal 2 in blue shades, Gyro-S v2 in orange shades; darker is single, lighter the double instances.}\label{fig:h2h-mem}
 \end{figure}
 
-The two models sit differently in memory, and reading only one number misleads. Gyro-S v2's \emph{footprint} is
-smaller than Signal 2's (16--23\,GiB against 17--30\,GiB), but its \emph{resident size} is far larger (33--48\,GiB
-against 9--45\,GiB): Gyro-S v2 is a 125B MoE whose experts and whose PLE table are memory-mapped from the SSD --- those
-file pages count as resident even though the process does not hold them, and the engine reads them on demand. Signal 2
-keeps its weights mostly in GPU (wired) memory, so its footprint is large while its resident size is modest. The
-system's free memory tracked this: phases C and D ran with only 0.1--5\,GiB free and heavy compression (up to 30\,GiB
-compressed), the signature of SSD-paged MoE serving on a 128\,GB machine.
+\subsection{Throughput}\label{sec:h2h-thr}
 
-\subsection{Run-to-run spread}\label{sec:h2h-spread}
+Table~\ref{tab:h2h-thr} is the operational view: passed real tasks per hour. For a single instance that is
+passed\,/\,wall; for a phase with two instances it is the \emph{sum} of both instances' passes over the \emph{longer}
+of the two wall times --- what the machine delivered per hour. Phase~D is excluded: its real series was faulted
+(Section~\ref{sec:h2h-fault}), and its function sets alone would not answer the operational question.
 
-The hard set is where the night's real difference shows. Gyro-S v2 (author's table, cap 6) scored \textbf{33/40} in
-the rerun of Section~\ref{sec:rerun}, \textbf{11/40} single, \textbf{35/40} and \textbf{27/40} as the two dual
-instances. Signal 2 scored \textbf{37}, \textbf{31} and \textbf{32}. Gyro-S v2's early stopping --- answers never
-written, turns ending after announcements (Section~\ref{sec:failures}) --- varies strongly from run to run; Signal 2's
-spread is much narrower. That variance, not either model's best case, is the practical difference between them: a
-worker whose hard-set score swings between 11/40 and 35/40 cannot be planned around, while one that stays in the 31--37
-band can.
-
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=\textwidth]{figures/fig-h2h-spread.pdf}
-\caption{Hard-set score per run across all runs of this report (one rep each). Gyro-S v2's bars swing widely (8--35/40, the first two with the wrong PLE table); Signal 2 stays in a narrow band.}\label{fig:h2h-spread}
-\end{figure}
+\small
+\caption{Real-task throughput per phase}\label{tab:h2h-thr}
+\begin{tabular}{lrrr}
+\toprule
+Phase & Passed real tasks & Wall (s) & Passed per hour \\
+\midrule
+A: Signal 2, single & 4 & 2{,}141 & 6.75 \\
+B: Gyro-S v2, single & 3 & 2{,}861 & 3.77 \\
+C: Signal 2, double & 7 (3 + 4) & 4{,}775 (max of 4{,}532 and 4{,}775) & 5.26 \\
+D: Gyro-S v2, double & --- & --- & faulted (Section~\ref{sec:h2h-fault}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Signal 2's single instance beats its own double here: two instances pass 7 tasks but take more than twice the time of
+one, so throughput drops from 6.75 to 5.26 per hour --- on this machine the real tasks saturate the shared engine, and
+a second instance mostly adds waiting, not work. The whole-night totals (all four sets) are 4{,}389\,s for phase~A,
+3{,}597\,s for phase~B, 10{,}106\,s for phase~C and 12{,}364\,s for phase~D.
+
+\section{What we got wrong first, and how we found it}\label{sec:first}
+
+Our first runs of Gyro-S v2 (24 November) used the \emph{base} model's Q8\_0 PLE table instead of the IQ4\_NL Gyro-S
+table the card pairs with this file. That setup scored 8/40 on the hard set --- far below Signal 2 --- and we had
+flagged the table pairing as a possible difference. After the report went out, the model author replied on X: ``I hope
+it was ran with external ple? Ple must be used. \ldots{} There results don't align with my testing.'' That pointed at
+exactly our mistake. We reran with the correct pairing --- same v2 file, same fresh pack, Strata 0.2.21, same bench,
+same machine; the server log confirms ``PLE on, table 320{,}001{,}536 rows of \ldots/Qwen3.8-Flash-Next-PLE-IQ4\_NL-GyroS.gguf''.
+Holding the guard cap at 2 isolates the table: hard goes from 8/40 (base table) to 30/40 (author's table), with nothing
+else changed; raising the announced-no-action cap 2 $\to$ 6 adds about three more (30 $\to$ 33). So the earlier gap was
+our setup, not the model. The head-to-head of Section~\ref{sec:results} is all on the corrected table; the wrong-table
+runs are kept only here and as the two lowest dots in Figure~\ref{fig:h2h-spread}, because they are what makes the
+setup lesson concrete.
+
+Two instrument faults of that same night would also have produced wrong verdicts, and each was found and fixed.
+(1)~The provider \cmd{gyro-s2} was registered \emph{disabled}: every worker start refused (exit code 2), but the bench
+logged ``done rc=0'' with 1-second walls and 0 passes --- Gyro-S v2 would have scored 0\,\% everywhere and been retired.
+Enabling the provider and rerunning produced plausible numbers in minutes, against ``done'' runs of one second; the
+bench now resolves the provider before the series and records a refused start as an error. (2)~A real task under test
+ran \cmd{pai} commands that rewrote the bench's own shared config to \cmd{workers.enabled:false}, so the next two tasks
+of a code-graph A/B were refused in 1 second each --- its ``off'' arm would have read 3/5 instead of 5/5, a finding in
+the wrong direction. The signature (1-second wall, no work) matched fault~1; inspecting the config showed the task's own
+write. The bench now rewrites its config before every task (PAI 1.2.138), and the two refused tasks were rerun and both
+passed.
 
 \subsection{A third instrument fault: an empty result from a stalled engine}\label{sec:h2h-fault}
 
-Both real series of phase~D read ``status: stopped, passed 0'' with an empty task list --- the harness watchdog ended
-each series after 15 minutes without worker activity and \emph{discarded the tasks already run}. Instance~1's engine
-log shows a Strata stall (``no progress for 60 s during a request (decode -1)''; issue~\#29) under two-instance load,
-after which the worker sat idle until the watchdog fired; instance~2 showed no engine stall and its cause is open. The
-outcomes were recovered from the per-task hidden-test logs (Section~\ref{sec:h2h-real}). \textbf{What it would have
-made us conclude:} Gyro-S v2 passes 0/5 real tasks in parallel --- a verdict that would retire the model. \textbf{How
-it was fixed, and what remains open:} two harness follow-ups are queued (PAI) --- the watchdog must grade the tasks
-already finished instead of writing an empty result, and a stalled local engine should fail the current task rather
-than stop the whole series. Until those land, phase~D's real set is reported as incomplete.
+Both real series of phase~D read ``stopped, passed 0''
+with an empty task list --- the watchdog ended each after 15 minutes without worker activity and \emph{discarded the
+tasks already run}. Instance~1's engine log shows a Strata stall (``no progress for 60 s during a request (decode -1)'';
+issue~\#29) under two-instance load, after which the worker sat idle until the watchdog fired; instance~2 showed no
+engine stall and its cause is open. The outcomes were recovered from the per-task hidden-test logs
+(Section~\ref{sec:h2h-real}). \textbf{What it would have made us conclude:} Gyro-S v2 passes 0/5 real tasks in parallel
+--- a verdict that would retire the model. Two harness follow-ups are queued (PAI): the watchdog must grade the tasks
+already finished instead of writing an empty result, and a stalled local engine should fail the current task rather than
+stop the whole series. Until those land, phase~D's real set is reported as incomplete.
 
 \section{Limits}\label{sec:limits}
 
-One rep per cell on every set; the run-to-run spread of the same model on the same set is large (short 8/20 against
-15/20, hard 8/40 against 32/40 with a confounder between them). Signal 2's own real set also spreads (5/5 against
-3/5 over two reps). Everything ran on one machine, and the dual runs share its memory and engine. The function sets
-cannot separate setups that differ by a few tasks of 40. The rerun of Section~\ref{sec:rerun} closes the table-pairing
-difference we had flagged --- with the author's IQ4\_NL table Gyro-S v2 performs at Signal 2's level on this bench ---
-but it is one rep per set, and the model card still lists v2 as not yet tested in Strata. Given all of this, no
-ranking of Gyro-S v2 and Signal 2 follows from these numbers; the earlier apparent gap was our setup, not the model.
+One rep per run on every set; the run-to-run spread of the same model on the same set is large (Gyro-S v2 short 2--17/20,
+hard 8--35/40; Signal 2's own real set also spreads, 5/5 against 3/5 over two reps). Everything ran on one machine, and
+the dual runs share its memory and engine. The function sets cannot separate setups that differ by a few tasks of 40.
+The model card still lists v2 as not yet tested in Strata. Given all of this, no ranking of Gyro-S v2 and Signal 2
+follows from these numbers; what follows is a tendency (Gyro-S v2 slower, less stable, weaker on real tasks) with wide
+error bars.
 
-\textbf{Verdict as an operational choice:} with the corrected setup the two models are on par on this bench at one rep
-each, so no ranking follows and the operational choice stays open: Signal 2 remains the local worker for now (its
-reference runs stand), Gyro-S v2 is kept installed but not routed in. The claim's percentages (drift on held-out text)
-were not reproduced or refuted here --- they measure a different thing than this bench measures.
+\textbf{Verdict as an operational choice:} Signal 2 remains the local worker for now --- it is more stable and faster,
+and its reference runs stand --- and Gyro-S v2 is kept installed but not routed in. The claim's percentages (drift on
+held-out text) were not reproduced or refuted here; they measure a different thing than this bench measures.
 
-\section{Side note: code-graph brief A/B}\label{sec:codegraph}
-
-A one-rep A/B of the code-graph brief on Signal 2, real set: \emph{ON} passed 5/5 in 2{,}548\,s, \emph{OFF} passed
-5/5 in 3{,}482\,s --- ON is 27\,\% faster summed over the five tasks, and faster on 3 of 5 individually. A second
-round was running when this report was written. Preliminary: one rep, and two of its tasks were initially refused by
-fault~2 before the fix and rerun.
+\section*{Changes in 0.2}
+The PLE setup description was corrected after the model author's question: the run used the v2 \emph{-noPLE} file with
+an external n-gram (PLE) table loaded via \cmd{--ple-gguf}, and the earlier text described a PLE-less run, which was
+wrong. We then reran with the IQ4\_NL PLE table the card pairs with this file, which is the setup every result here now
+uses, and added the full head-to-head of Section~\ref{sec:results}. The report is restructured around that
+head-to-head: the superseded wrong-table runs are reduced to Section~\ref{sec:first} rather than repeated as results,
+the tables share one style, and every figure now states what it shows and which finding it supports.
 
 \clearpage
 \markboth{\MakeUppercase{\slshape References}}{}
 \phantomsection
 \addcontentsline{toc}{section}{References}
 \printbibliography[title={References}]
-
-\section*{Changes in 0.2}
-The description of the PLE setup in Section~\ref{sec:setting} was corrected after the model author's question: the run
-used the v2 \emph{-noPLE} file with an external n-gram (PLE) table loaded via \cmd{--ple-gguf}; the earlier text
-described a PLE-less run, which was wrong. Section~\ref{sec:limits} states the table-pairing difference and the model card's note that v2 was not yet
-tested in Strata. We then reran with the IQ4\_NL PLE table the model card pairs with this file (Section~\ref{sec:rerun}):
-hard goes from 8/40 to 30/40 at the same guard cap --- the earlier gap was our setup, not the model; with the paired
-table Gyro-S v2 performs at Signal 2's level on this bench. Figures and abstract updated accordingly.
 
 \end{document}
