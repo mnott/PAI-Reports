@@ -154,7 +154,7 @@ HN = [20, 40, 40, 5]
 H2H_RUNS = [("A: Signal 2, single", BLUE, [16, 39, 37, 4]),
             ("B: Gyro-S v2, single", ORANGE, [2, 39, 11, 3]),
             ("C: Signal 2, inst. 1", "#5b9bd8", [16, 37, 31, 3]),
-            ("C: Signal 2, inst. 2", "#9ecbf5", [18, 39, 32, None]),
+            ("C: Signal 2, inst. 2", "#9ecbf5", [18, 39, 32, 4]),
             ("D: Gyro-S v2, inst. 1", "#f2a65c", [15, 38, 35, None]),
             ("D: Gyro-S v2, inst. 2", "#f8c98f", [17, 36, 27, None])]
 fig, ax = plt.subplots(figsize=(7.4, 4.0))
@@ -164,7 +164,8 @@ for j, (name, c, passed) in enumerate(H2H_RUNS):
     vals = [None if p is None else 100 * p / n for p, n in zip(passed, HN)]
     for x, v, p in zip(xs, vals, passed):
         if v is None:
-            ax.text(x, 3, "fault", ha="center", va="bottom", fontsize=6.5, color=INK2)
+            # phase D real: watchdog-stopped; hatched empty bar marks it (annotation once, below)
+            ax.bar(x, 0, width=w, color=BG, edgecolor=c, linewidth=1.4, hatch="//")
             continue
         ax.bar(x, v, width=w, color=c, label=name if j == 0 else None)
         ax.text(x, v + 2.5, str(p), ha="center", va="bottom", fontsize=6.5, color=INK, rotation=90)
@@ -180,8 +181,8 @@ for handle in legend.get_patches():
 clean(ax, "y")
 ax.set_title("Head-to-head: pass rate per set for the six runs of 25/26 November",
              loc="left", color=INK, fontsize=9.5, fontweight="bold")
-fig.text(0.01, 0.01, "'fault' = phase D real series stopped by the watchdog; outcomes recovered per task (Sec. of the paper).",
-         color=INK2, fontsize=7)
+fig.text(0.5, 0.045, "D: incomplete (watchdog)", ha="center", va="bottom",
+         color=INK2, fontsize=7.5, fontweight="bold")
 fig.tight_layout(rect=(0, 0.16, 1, 1))
 fig.savefig("fig-h2h-pass.pdf")
 plt.close(fig)
@@ -221,25 +222,33 @@ fig.savefig("fig-h2h-memory.pdf")
 plt.close(fig)
 
 # ---- 7 hard-set spread per model across all runs of the report ----
-SPREAD = [("Gyro-S v2", ORANGE,
-           [("wrong PLE table, solo", 8), ("wrong table, dual (cap 6)", 32),
-            ("author's table, rerun", 33), ("h2h single", 11), ("h2h double A", 35), ("h2h double B", 27)]),
-          ("Signal 2", BLUE,
-           [("ref loop-stopped", 33), ("dual 0.2.21", 30), ("h2h single", 37),
-            ("h2h double A", 31), ("h2h double B", 32)])]
-fig, ax = plt.subplots(figsize=(7.4, 3.4))
-for i, (name, c, pts) in enumerate(SPREAD[::-1]):
-    ys = [len(pts) - 1 - k for k in range(len(pts))]
-    ax.scatter([v for _, v in pts], ys, s=52, color=c, zorder=3)
-    for v, y in zip([p[1] for p in pts], ys):
-        ax.text(v + 1.2, y, str(v), va="center", fontsize=7.5, color=INK)
-ax.set_yticks(range(len(SPREAD[0][2]) + len(SPREAD[1][2])))
-ax.set_yticklabels([p[0] for p in SPREAD[1][2]] + [p[0] for p in SPREAD[0][2]])
+# One explicit list of (run label, model, hard passed); each point sits on its own labelled row.
+SPREAD_ROWS = [
+    ("h2h double B", "Gyro-S v2", 27),
+    ("h2h double A", "Gyro-S v2", 35),
+    ("h2h single", "Gyro-S v2", 11),
+    ("author's table, cap 2 (rerun)", "Gyro-S v2", 30),
+    ("author's table, rerun", "Gyro-S v2", 33),
+    ("wrong table, dual (cap 6)", "Gyro-S v2", 32),
+    ("wrong table, solo", "Gyro-S v2", 8),
+    ("h2h double B", "Signal 2", 32),
+    ("h2h double A", "Signal 2", 31),
+    ("h2h single", "Signal 2", 37),
+    ("dual 0.2.21", "Signal 2", 30),
+    ("reference run", "Signal 2", 33),
+]
+MODEL_COLOR = {"Gyro-S v2": ORANGE, "Signal 2": BLUE}
+fig, ax = plt.subplots(figsize=(7.4, 3.6))
+for y, (label, model, v) in enumerate(SPREAD_ROWS):
+    ax.scatter(v, y, s=52, color=MODEL_COLOR[model], zorder=3)
+    ax.text(v + 1.2, y, str(v), va="center", fontsize=7.5, color=INK)
+ax.set_yticks(range(len(SPREAD_ROWS)))
+ax.set_yticklabels([f"{label}  ({m})" for label, m, _ in SPREAD_ROWS])
 ax.set_xlim(0, 44)
 ax.set_xticks(range(0, 45, 10))
 ax.set_xlabel("hard tasks passed out of 40")
-ax.legend(handles=[Patch(color=c, label=name) for name, c, _ in SPREAD],
-          frameon=False, fontsize=7.5, loc="upper right", bbox_to_anchor=(1.02, 1.03))
+ax.legend(handles=[Patch(color=c, label=m) for m, c in MODEL_COLOR.items()],
+          frameon=False, fontsize=7.5, loc="lower right", bbox_to_anchor=(1.02, -0.02))
 ax.tick_params(axis="y", length=0)
 ax.spines["left"].set_visible(False)
 clean(ax)
