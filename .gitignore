@@ -12,3 +12,4 @@
 *.run.xml
 *.mw
 .DS_Store
+__pycache__/
